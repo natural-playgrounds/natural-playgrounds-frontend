@@ -2,9 +2,13 @@ import Head from "next/head";
 import Hero from "../components/hero";
 import WidgetChooser from "../components/widgetChooser";
 import { useCartSlide } from "../hooks/use-cart-slide.js";
+import { useEffect } from "react";
 export default function Page({ page, results, selected, category }) {
   const { updateTestimonial } = useCartSlide();
-  updateTestimonial(page.testimonial);
+  
+  useEffect(() => {
+    updateTestimonial(page.testimonial);
+  }, [page.testimonial, updateTestimonial]);
   return (
     <main>
       <Head>

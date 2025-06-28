@@ -11,14 +11,13 @@ import Router from "next/router";
 import Image from "next/image";
 import Link from "next/link";
 import GoogleAutocomplete from "../components/GoogleAutocomplete";
-import { useToasts } from "react-toast-notifications";
+import toast from "react-hot-toast";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 const Checkout = (props) => {
   console.log('Google Maps API Key:', process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY);
-  const { addToast } = useToasts();
   const { cartTotal, items, removeItem, updateItemQuantity, emptyCart } =
     useCart();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -115,7 +114,7 @@ const Checkout = (props) => {
       e.preventDefault();
       
       if (!paymentToken) {
-        addToast("Please enter your payment information", { appearance: "error" });
+        toast.error("Please enter your payment information");
         return;
       }
       
@@ -148,11 +147,11 @@ const Checkout = (props) => {
         // CardPointe authorization successful
         if (data.success) {
           emptyCart();
-          addToast(`Order authorized successfully! Order #${data.orderNumber}`, { appearance: "success" });
+          toast.success(`Order authorized successfully! Order #${data.orderNumber}`);
           Router.push(`/purchase/${data.saleId}`);
         } else {
           // Handle authorization failure
-          addToast(data.error || "Payment authorization failed", { appearance: "error" });
+          toast.error(data.error || "Payment authorization failed");
           setIsSubmitting(false);
         }
       }
@@ -164,7 +163,7 @@ const Checkout = (props) => {
       const errorMessage = error.response?.data?.error || 
         "Issue processing your order. Please try again or contact us at info@naturalplaygrounds.com";
       
-      addToast(errorMessage, { appearance: "error" });
+      toast.error(errorMessage);
     }
   }
   return (
@@ -501,7 +500,7 @@ const Checkout = (props) => {
                             src={item.image}
                             alt={`Product Image of ${item.name}`}
                             className="object-center object-cover"
-                            layout="fill"
+                            fill
                           />
                         )}
                       </div>
@@ -634,15 +633,28 @@ const Checkout = (props) => {
     </div>
   );
 };
-Checkout.getInitialProps = async (ctx) => {
+export async function getServerSideProps(ctx) {
   const { token } = nextCookie(ctx);
+  
+  // Auth check - redirect if no token
+  if (!token) {
+    return {
+      redirect: {
+        destination: "/login",
+        permanent: false,
+      },
+    };
+  }
+
   var environment = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
   const apiUrl = `${environment}/api/account/`;
 
-  const redirectOnError = () =>
-    typeof window !== "undefined"
-      ? Router.push("/login")
-      : ctx.res.writeHead(302, { Location: "/login" }).end();
+  const redirectOnError = () => ({
+    redirect: {
+      destination: "/login",
+      permanent: false,
+    },
+  });
 
   try {
     const response = await axios.post(apiUrl, {
@@ -651,15 +663,17 @@ Checkout.getInitialProps = async (ctx) => {
 
     if (response.status == 201) {
       const data = await response.data;
-      return data;
+      return {
+        props: { ...data, token },
+      };
     } else {
       // https://github.com/developit/unfetch#caveats
-      return await redirectOnError();
+      return redirectOnError();
     }
   } catch (error) {
     // Implementation or Network error
     return redirectOnError();
   }
-};
+}
 
 export default withAuthSync(Checkout);

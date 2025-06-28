@@ -65,21 +65,19 @@ export default function WidgetChooser({ obj, results, category }) {
               <div className="w-full md:w-1/2 flex flex-col justify-center items-center py-8">
                 <Title title={obj.cta_title} added_class="text-center" />
                 <div className="py-4 flex">
-                  <Link href={obj.cta_link} passHref>
-                    <a className="relative border-8 border-dark-green px-16 py-6 overflow-hidden no-underline">
-                      <div className="absolute inset-0">
-                        <Image
-                          className="w-full h-full object-cover"
-                          src={Bark}
-                          alt="CTA Bark"
-                          layout="fill"
-                          objectFit="cover"
-                        />
-                      </div>
-                      <p className="relative font-bold text-lg uppercase">
-                        {obj.cta_text}
-                      </p>
-                    </a>
+                  <Link href={obj.cta_link} className="relative border-8 border-dark-green px-16 py-6 overflow-hidden no-underline">
+                    <div className="absolute inset-0">
+                      <Image
+                        className="w-full h-full object-cover"
+                        src={Bark}
+                        alt="CTA Bark"
+                        fill
+                        style={{ objectFit: 'cover' }}
+                      />
+                    </div>
+                    <p className="relative font-bold text-lg uppercase">
+                      {obj.cta_text}
+                    </p>
                   </Link>
                 </div>
               </div>
@@ -120,24 +118,22 @@ export default function WidgetChooser({ obj, results, category }) {
                   className="col-span-2 sm:col-span-1 flex flex-col"
                   key={idx}
                 >
-                  <Link href={`/gallery/${gallery.slug}`} passHref>
-                    <a>
-                      <div className="relative image">
-                        {gallery.image_url && (
-                          <Image
-                            className="object-cover shadow-lg"
-                            src={gallery.image_url}
-                            alt=""
-                            layout="fill"
-                          />
-                        )}
-                      </div>
-                      <div className="relative p-8">
-                        <h3 className="text-xl font-semibold text-center uppercase">
-                          {gallery.title}
-                        </h3>
-                      </div>
-                    </a>
+                  <Link href={`/gallery/${gallery.slug}`}>
+                    <div className="relative image">
+                      {gallery.image_url && (
+                        <Image
+                          className="object-cover shadow-lg"
+                          src={gallery.image_url}
+                          alt={gallery.title || "Gallery image"}
+                          fill
+                        />
+                      )}
+                    </div>
+                    <div className="relative p-8">
+                      <h3 className="text-xl font-semibold text-center uppercase">
+                        {gallery.title}
+                      </h3>
+                    </div>
                   </Link>
                 </div>
               ))}
@@ -155,17 +151,15 @@ export default function WidgetChooser({ obj, results, category }) {
                     key={idx}
                   >
                     <div className="relative image h-full">
-                      <Link href={news.url} passHref>
-                        <a className="cursor-pointer">
-                          {news.image_url && (
-                            <Image
-                              className="object-cover"
-                              src={news.image_url}
-                              alt=""
-                              layout="fill"
-                            />
-                          )}
-                        </a>
+                      <Link href={news.url} className="cursor-pointer">
+                        {news.image_url && (
+                          <Image
+                            className="object-cover"
+                            src={news.image_url}
+                            alt={news.title || "News article image"}
+                            fill
+                          />
+                        )}
                       </Link>
                     </div>
                   </div>
@@ -231,35 +225,31 @@ export default function WidgetChooser({ obj, results, category }) {
                       className="object-cover "
                       src={obj.image_one_url}
                       alt={obj.image_one_alt_text}
-                      layout="fill"
+                      fill
                     />
                   </div>
                 </div>
                 <div className="w-full md:w-1/3 flex flex-col space-y-12 items-center">
                   <div>
-                    <Link href="/manufacturing" passHref>
-                      <a className="flex flex-col items-center no-underline">
-                        <Image
-                          src={Manufacturing}
-                          width={50}
-                          height={50}
-                          alt="Manufacturing Image"
-                        />
-                        <h3 className="mt-4">Manufacturing</h3>
-                      </a>
+                    <Link href="/manufacturing" className="flex flex-col items-center no-underline">
+                      <Image
+                        src={Manufacturing}
+                        width={50}
+                        height={50}
+                        alt="Manufacturing Image"
+                      />
+                      <h3 className="mt-4">Manufacturing</h3>
                     </Link>
                   </div>
                   <div>
-                    <Link href="/design" passHref>
-                      <a className="flex flex-col items-center no-underline">
-                        <Image
-                          src={Design}
-                          width={50}
-                          height={50}
-                          alt="Design Image"
-                        />
-                        <h3 className="mt-4">Design</h3>
-                      </a>
+                    <Link href="/design" className="flex flex-col items-center no-underline">
+                      <Image
+                        src={Design}
+                        width={50}
+                        height={50}
+                        alt="Design Image"
+                      />
+                      <h3 className="mt-4">Design</h3>
                     </Link>
                   </div>
                 </div>
@@ -269,7 +259,7 @@ export default function WidgetChooser({ obj, results, category }) {
                       className="object-cover"
                       src={obj.image_two_url}
                       alt={obj.image_two_alt_text}
-                      layout="fill"
+                      fill
                     />
                   </div>
                 </div>
@@ -319,7 +309,7 @@ export default function WidgetChooser({ obj, results, category }) {
                       <Image
                         className="h-6 w-6 rounded-full"
                         src={Leaf}
-                        alt=""
+                        alt="Leaf icon"
                       />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -363,19 +353,17 @@ export default function WidgetChooser({ obj, results, category }) {
         <div className="relative">
           <div className="wide-load flex flex-col space-y-6">
             <div className="w-full justify-center flex flex-col items-center">
-              <Link href={obj.cta_link} passHref>
-                <a className="relative border-8 border-dark-green px-16 py-6 overflow-hidden no-underline">
-                  <div className="absolute inset-0">
-                    <Image
-                      className="w-full h-full object-cover"
-                      src={Bark}
-                      alt="CTA Bark"
-                    />
-                  </div>
-                  <p className="relative font-bold text-lg uppercase">
-                    {obj.cta_text}
-                  </p>
-                </a>
+              <Link href={obj.cta_link} className="relative border-8 border-dark-green px-16 py-6 overflow-hidden no-underline">
+                <div className="absolute inset-0">
+                  <Image
+                    className="w-full h-full object-cover"
+                    src={Bark}
+                    alt="CTA Bark"
+                  />
+                </div>
+                <p className="relative font-bold text-lg uppercase">
+                  {obj.cta_text}
+                </p>
               </Link>
             </div>
           </div>
@@ -398,7 +386,7 @@ export default function WidgetChooser({ obj, results, category }) {
                   className="h-full w-full object-cover z-[10000]"
                   src={obj.image_one_url}
                   alt={obj.image_one_alt_text}
-                  layout="fill"
+                  fill
                 />
               )}
               <div className="absolute inset-0"></div>
@@ -447,18 +435,14 @@ export default function WidgetChooser({ obj, results, category }) {
                   </div>
                 </div>
                 <div className="w-full md:w-1/3 flex flex-col space-y-8 items-center justify-end">
-                  <Link href="/about" passHref>
-                    <a className="cursor-pointer no-underline">
-                      <Title title={obj.title} added_class="learn-more " />
-                    </a>
+                  <Link href="/about" className="cursor-pointer no-underline">
+                    <Title title={obj.title} added_class="learn-more " />
                   </Link>
-                  <Link href="/about" passHref>
-                    <p className="cursor-pointer">Our Company</p>
+                  <Link href="/about" className="cursor-pointer">
+                    Our Company
                   </Link>
-                  <Link href="/faq" passHref>
-                    <p className="cursor-pointer">
-                      Everything else about Natural Playgrounds
-                    </p>
+                  <Link href="/faq" className="cursor-pointer">
+                    Everything else about Natural Playgrounds
                   </Link>
                 </div>
                 <div className="w-full md:w-1/3 flex justify-center">

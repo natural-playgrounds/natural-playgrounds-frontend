@@ -1,11 +1,10 @@
 import { useState } from "react";
 import axios from "axios";
-import { useToasts } from "react-toast-notifications";
+import toast from "react-hot-toast";
 import Router, { useRouter } from "next/router";
 
 const Login = () => {
   const [password, setPassword] = useState("");
-  const { addToast } = useToasts();
   const router = useRouter();
 
   async function handleSubmit(e) {
@@ -18,25 +17,13 @@ const Login = () => {
         token: router.query.token,
       });
       if (res.status === 200) {
-        addToast("Please login with your new password.", {
-          appearance: "success",
-          autoDismiss: true,
-          autoDismissTimeout: 3000,
-        });
+        toast.success("Please login with your new password.", { duration: 3000 });
         Router.push("/login");
       } else {
-        addToast("Issue resetting your password.", {
-          appearance: "error",
-          autoDismiss: true,
-          autoDismissTimeout: 3000,
-        });
+        toast.error("Issue resetting your password.", { duration: 3000 });
       }
     } catch (error) {
-      addToast("Issue resetting your password.", {
-        appearance: "error",
-        autoDismiss: true,
-        autoDismissTimeout: 3000,
-      });
+      toast.error("Issue resetting your password.", { duration: 3000 });
     }
   }
 

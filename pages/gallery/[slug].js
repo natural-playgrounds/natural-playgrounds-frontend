@@ -19,7 +19,7 @@ export default function Gallery({ gallery }) {
                         className="object-cover shadow-lg"
                         src={image.image_url}
                         alt=""
-                        layout="fill"
+                        fill
                       />
                     )}
                   </div>

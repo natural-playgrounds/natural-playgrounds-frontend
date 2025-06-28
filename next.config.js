@@ -1,11 +1,37 @@
-module.exports = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   reactStrictMode: true,
   images: {
-    domains: [
-      "localhost",
-      "natural-playgrounds-production.s3.amazonaws.com",
-      "images.unsplash.com",
+    remotePatterns: [
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '8000',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'natural-playgrounds-production.s3.amazonaws.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+        pathname: '/**',
+      },
     ],
-    unoptimized: true, // Disable image optimization to fix WASM issue
+    // Image optimization re-enabled with sharp
   },
-};
+  // Enable experimental features
+  experimental: {
+    // Optimize CSS imports - disabled due to missing critters dependency
+    // optimizeCss: true,
+  },
+  // Performance optimizations
+  compiler: {
+    // Remove console.log in production
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
+}
+
+module.exports = nextConfig

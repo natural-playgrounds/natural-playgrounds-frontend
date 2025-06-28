@@ -105,11 +105,11 @@ export default function Footer() {
         <div className="flex flex-row justify-end mt-4">
           <div>
             <Image
-              className="h-10"
+              className="h-10 w-auto"
               src={Logo}
               alt="Natural Playgrounds Logo"
-              width="250px"
-              height="150px"
+              width={250}
+              height={150}
             />
             <p className="text-sm ">
               &copy; 2013 - {new Date().getFullYear()} Natural Playgrounds

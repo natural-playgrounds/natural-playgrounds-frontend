@@ -107,8 +107,8 @@ export default function Search({ results, category, topSeller }) {
             <h3 className="text-2xl font-medium leading-6 text-gray-900 pb-4">
               Select a Category
             </h3>
-            <form className="overflow-scroll">
-              <div className="max-h-screen overflow-scroll space-y-6">
+            <form className="overflow-auto">
+              <div className="max-h-96 overflow-auto space-y-6">
                 {category.map((option, optionIdx) => (
                   <div key={optionIdx} className="flex items-center">
                     <input
@@ -139,7 +139,7 @@ export default function Search({ results, category, topSeller }) {
         </aside>
         <section
           aria-labelledby="product-heading"
-          className="mt-6 lg:mt-0 lg:col-span-2 xl:col-span-3 max-h-screen overflow-scroll"
+          className="mt-6 lg:mt-0 lg:col-span-2 xl:col-span-3"
         >
           <h2 id="product-heading" className="sr-only">
             Products
@@ -153,13 +153,13 @@ export default function Search({ results, category, topSeller }) {
                     {selling.map((seller, sellerIdx) => (
                       <div className="grid grid-cols-3 gap-7" key={sellerIdx}>
                         <div className="col-span-1">
-                          <div className="w-full aspect-w-1 aspect-h-1 bg-gray-200 rounded-lg overflow-hidden xl:aspect-w-7 xl:aspect-h-8">
-                            {seller.image_url ? (
+                          <div className="w-full aspect-w-1 aspect-h-1 bg-gray-200 rounded-lg overflow-hidden xl:aspect-w-7 xl:aspect-h-8 relative">
+                            {seller.image_url || (seller.images && seller.images.length > 0 && seller.images[0].image_url) ? (
                               <Image
-                                src={seller.image_url}
+                                src={seller.image_url || seller.images[0].image_url}
                                 alt={`Image for ${seller.name}`}
                                 className="w-full h-full object-center object-cover group-hover:opacity-75"
-                                layout="fill"
+                                fill
                               />
                             ) : (
                               <div className="w-full h-full object-center object-cover sm:w-full sm:h-full"></div>
@@ -170,13 +170,11 @@ export default function Search({ results, category, topSeller }) {
                           <Link
                             key={sellerIdx}
                             href={seller.link}
-                            className="group"
+                            className="group no-underline"
                           >
-                            <a className="no-underline">
-                              <h3 className="text-2xl font-extrabold tracking-tight  text-gray-700">
-                                {seller.name}
-                              </h3>
-                            </a>
+                            <h3 className="text-2xl font-extrabold tracking-tight  text-gray-700">
+                              {seller.name}
+                            </h3>
                           </Link>
                           {seller.meta_description && (
                             <div
@@ -204,23 +202,21 @@ export default function Search({ results, category, topSeller }) {
               <div className="grid grid-cols-1 gap-y-4 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-10 lg:gap-x-8 xl:grid-cols-3">
                 {localResults.map((product, productIdx) => (
                   <Link key={productIdx} href={product.link} className="group">
-                    <a>
-                      <div className="w-full aspect-w-1 aspect-h-1 bg-gray-200 rounded-lg overflow-hidden xl:aspect-w-7 xl:aspect-h-8">
-                        {product.image_url ? (
-                          <Image
-                            src={product.image_url}
-                            alt={`Product Image for ${product.name}`}
-                            className="w-full h-full object-center object-cover group-hover:opacity-75"
-                            layout="fill"
-                          />
-                        ) : (
-                          <div className="w-full h-full object-center object-cover sm:w-full sm:h-full"></div>
-                        )}
-                      </div>
-                      <h3 className="mt-4 text-sm text-gray-700">
-                        {product.name}
-                      </h3>
-                    </a>
+                    <div className="w-full aspect-w-1 aspect-h-1 bg-gray-200 rounded-lg overflow-hidden xl:aspect-w-7 xl:aspect-h-8 relative">
+                      {product.image_url || (product.images && product.images.length > 0 && product.images[0].image_url) ? (
+                        <Image
+                          src={product.image_url || product.images[0].image_url}
+                          alt={`Product Image for ${product.name}`}
+                          className="w-full h-full object-center object-cover group-hover:opacity-75"
+                          fill
+                        />
+                      ) : (
+                        <div className="w-full h-full object-center object-cover sm:w-full sm:h-full"></div>
+                      )}
+                    </div>
+                    <h3 className="mt-4 text-sm text-gray-700">
+                      {product.name}
+                    </h3>
                   </Link>
                 ))}
               </div>

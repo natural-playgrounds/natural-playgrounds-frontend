@@ -9,28 +9,26 @@ export default function Drawer({ product, three, category }) {
           pathname: "/products/",
           query: { category_search: category.name },
         }}
-        passHref
+        className="no-underline"
       >
-        <a className="no-underline">
-          <div className="w-full aspect-w-1 aspect-h-1 bg-gray-200 rounded-lg overflow-hidden xl:aspect-w-7 xl:aspect-h-8">
-            <div>
-              {category.image_url ? (
-                <Image
-                  src={category.image_url}
-                  alt={`Category Image for ${category.name}`}
-                  className="w-full h-full object-center object-cover group-hover:opacity-75"
-                  layout="fill"
-                  priority={true}
-                />
-              ) : (
-                <div className="w-full h-full object-center object-cover sm:w-full sm:h-full"></div>
-              )}
-            </div>
-          </div>
+        <div className="w-full aspect-w-1 aspect-h-1 bg-gray-200 rounded-lg overflow-hidden xl:aspect-w-7 xl:aspect-h-8">
           <div>
-            <p className="text-xl font-bold pt-2">{category.name}</p>
+            {category.image_url ? (
+              <Image
+                src={category.image_url}
+                alt={`Category Image for ${category.name}`}
+                className="w-full h-full object-center object-cover group-hover:opacity-75"
+                fill
+                priority={true}
+              />
+            ) : (
+              <div className="w-full h-full object-center object-cover sm:w-full sm:h-full"></div>
+            )}
           </div>
-        </a>
+        </div>
+        <div>
+          <p className="text-xl font-bold pt-2">{category.name}</p>
+        </div>
       </Link>
     </div>
   );

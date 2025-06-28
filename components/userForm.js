@@ -25,7 +25,7 @@ const Form = ({ errorMessage, onSubmit }) => (
     <div className="flex flex-row justify-between w-full items-center">
       <>
         <Link href="/forgot/" className="w-1/2">
-          <a>Forgot Password</a>
+          Forgot Password
         </Link>
         <button type="submit" className="button w-32">
           Login

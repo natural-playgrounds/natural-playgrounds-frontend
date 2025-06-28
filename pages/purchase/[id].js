@@ -61,7 +61,7 @@ const Purchase = (props) => {
                     src={product.image}
                     alt={`Product image for ${product.name}`}
                     className="object-center object-cover"
-                    layout="fill"
+                    fill
                   />
                 </div>
                 <div className="flex-auto flex flex-col">
@@ -115,12 +115,25 @@ const Purchase = (props) => {
     </div>
   );
 };
-Purchase.getInitialProps = async (ctx) => {
+export async function getServerSideProps(ctx) {
   const { token } = nextCookie(ctx);
-  const redirectOnError = () =>
-    typeof window !== "undefined"
-      ? Router.push("/login")
-      : ctx.res.writeHead(302, { Location: "/login" }).end();
+  
+  // Auth check - redirect if no token
+  if (!token) {
+    return {
+      redirect: {
+        destination: "/login",
+        permanent: false,
+      },
+    };
+  }
+
+  const redirectOnError = () => ({
+    redirect: {
+      destination: "/login",
+      permanent: false,
+    },
+  });
   var environment = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
   const apiUrl = `${environment}/api/purchase/${ctx.query.id}/`;
 
@@ -129,15 +142,17 @@ Purchase.getInitialProps = async (ctx) => {
     if (response.status == 201) {
       const data = await response.data;
       console.log(data);
-      return data;
+      return {
+        props: { ...data, token },
+      };
     } else {
       // https://github.com/developit/unfetch#caveats
-      return await redirectOnError();
+      return redirectOnError();
     }
   } catch (error) {
     // Implementation or Network error
     return redirectOnError();
   }
-};
+}
 
 export default withAuthSync(Purchase);

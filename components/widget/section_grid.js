@@ -12,7 +12,7 @@ export default function SectionGrid({ title, logo, content, image, url }) {
                   className="object-cover "
                   src={logo}
                   alt=""
-                  layout="fill"
+                  fill
                 />
               </Link>
             ) : (
@@ -20,7 +20,7 @@ export default function SectionGrid({ title, logo, content, image, url }) {
                 className="object-cover "
                 src={logo}
                 alt=""
-                layout="fill"
+                fill
               />
             )}
           </div>
@@ -40,7 +40,7 @@ export default function SectionGrid({ title, logo, content, image, url }) {
               className="object-cover"
               src={image}
               alt="Image related to the corresponding service"
-              layout="fill"
+              fill
             />
           )}
         </div>

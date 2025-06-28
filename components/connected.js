@@ -1,9 +1,8 @@
 import { useState } from "react";
 import axios from "axios";
-import { useToasts } from "react-toast-notifications";
+import toast from "react-hot-toast";
 
 export default function Connected() {
-  const { addToast } = useToasts();
   const [email, setEmail] = useState();
   const [errorMsg, setErrorMsg] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -18,22 +17,14 @@ export default function Connected() {
       });
 
       if (res.status === 201) {
-        addToast("We'll be in touch soon.", {
-          appearance: "success",
-          autoDismiss: true,
-          autoDismissTimeout: 3000,
-        });
+        toast.success("We'll be in touch soon.", { duration: 3000 });
       } else {
         setIsSubmitting(false);
         throw new Error(await res.data);
       }
     } catch (error) {
       setIsSubmitting(false);
-      addToast(`An unexpected error happened occurred: ${error}`, {
-        appearance: "error",
-        autoDismiss: true,
-        autoDismissTimeout: 3000,
-      });
+      toast.error(`An unexpected error happened occurred: ${error}`, { duration: 3000 });
       if (
         error.response &&
         error.response.data &&

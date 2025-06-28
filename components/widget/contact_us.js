@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import ReCAPTCHA from "react-google-recaptcha";
 import axios from "axios";
-import { useToasts } from "react-toast-notifications";
+import toast from "react-hot-toast";
 
 import "react-loader-spinner/dist/loader/css/react-spinner-loader.css";
 import Loader from "react-loader-spinner";
@@ -13,7 +13,6 @@ export default function Profile() {
   const [message, setMessage] = useState();
   const [errorMsg, setErrorMsg] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { addToast } = useToasts();
 
   function onChange(value) {
     setCaptcha(value);
@@ -33,11 +32,7 @@ export default function Profile() {
         });
 
         if (res.status === 201) {
-          addToast("We'll be in touch soon.", {
-            appearance: "success",
-            autoDismiss: true,
-            autoDismissTimeout: 3000,
-          });
+          toast.success("We'll be in touch soon.", { duration: 3000 });
           setName();
           setEmail();
           setMessage();
@@ -47,11 +42,7 @@ export default function Profile() {
         isSubmitting(false);
       }
     } catch (error) {
-      addToast(`An unexpected error happened occurred: ${error}`, {
-        appearance: "error",
-        autoDismiss: true,
-        autoDismissTimeout: 3000,
-      });
+      toast.error(`An unexpected error happened occurred: ${error}`, { duration: 3000 });
       if (
         error.response &&
         error.response.data &&

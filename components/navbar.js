@@ -39,13 +39,17 @@ export default function Example() {
   const { search } = router.query;
   const { updateCartSlide } = useCartSlide();
   const { totalUniqueItems } = useCart();
-  const [searchTerm, setSearchTerm] = useState(search);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     if (router.query.search) {
       setSearchTerm(router.query.search);
+    } else if (search) {
+      setSearchTerm(search);
     }
-  }, [router.query]);
+  }, [router.query, search]);
 
   return (
     <Disclosure as="header" className="bg-white shadow">
@@ -56,16 +60,14 @@ export default function Example() {
               <div className="relative h-28 flex justify-between">
                 <div className="relative px-2 flex lg:px-0">
                   <div className="flex-shrink-0 flex items-center">
-                    <Link href="/" passHref>
-                      <a className="z-10">
-                        <Image
-                          className="h-16 no-underline"
-                          src={Logo}
-                          alt="Natural Playgrounds Logo"
-                          width="161px"
-                          height="100px"
-                        />
-                      </a>
+                    <Link href="/" className="z-10">
+                      <Image
+                        className="h-16 w-auto no-underline"
+                        src={Logo}
+                        alt="Natural Playgrounds Logo"
+                        width={161}
+                        height={100}
+                      />
                     </Link>
                   </div>
                 </div>
@@ -119,7 +121,7 @@ export default function Example() {
                           className="h-6 w-6"
                           aria-hidden="true"
                         />
-                        {totalUniqueItems > 0 && (
+                        {mounted && totalUniqueItems > 0 && (
                           <span className="absolute top-0 right-0 h-5 w-5 transform -translate-y-1/2 translate-x-1/2 rounded-full ring-2 ring-white bg-dark-green flex justify-center items-center">
                             <span className="text-xs text-white">
                               {totalUniqueItems}
@@ -136,17 +138,16 @@ export default function Example() {
                       Shopping Cart
                     </span>
                   </div>
-                  <Link href="/account/" passHref>
-                    <a
-                      className="flex flex-row justify-between space-x-1 items-center h no-underline relative cursor-pointer text-black"
-                      style={{ zIndex: 1 }}
-                    >
-                      <button className="flex-shrink-0 bg-white rounded-full p-">
-                        <span className="sr-only">View my account</span>
-                        <UserIcon className="h-6 w-6" aria-hidden="true" />
-                      </button>
-                      <p className="uppercase text-sm">My Account</p>
-                    </a>
+                  <Link 
+                    href="/account/" 
+                    className="flex flex-row justify-between space-x-1 items-center h no-underline relative cursor-pointer text-black"
+                    style={{ zIndex: 1 }}
+                  >
+                    <button className="flex-shrink-0 bg-white rounded-full p-">
+                      <span className="sr-only">View my account</span>
+                      <UserIcon className="h-6 w-6" aria-hidden="true" />
+                    </button>
+                    <p className="uppercase text-sm">My Account</p>
                   </Link>
                 </div>
               </div>
@@ -180,13 +181,13 @@ export default function Example() {
           <Disclosure.Panel as="nav" className="lg:hidden" aria-label="Global">
             <div className="pt-2 pb-3 px-2 space-y-1">
               {mobileNavigation.map((item) => (
-                <Link href={item.href} key={item.name} passHref>
-                  <a
-                    className="block rounded-md py-2 px-3 text-base font-medium no-underline"
-                    aria-current={item.current ? "page" : undefined}
-                  >
-                    {item.name}
-                  </a>
+                <Link 
+                  href={item.href} 
+                  key={item.name}
+                  className="block rounded-md py-2 px-3 text-base font-medium no-underline"
+                  aria-current={item.current ? "page" : undefined}
+                >
+                  {item.name}
                 </Link>
               ))}
             </div>

@@ -36,12 +36,12 @@ export default function Product({ product }) {
         <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-8 lg:items-start">
           {/* Image gallery */}
           <div className="h-full w-full md:w-2/5">
-            <Tab.Group as="div" className="flex flex-col-reverse">
-              {/* Image selector */}
-              <div className="hidden mt-6 w-full max-w-2xl mx-auto sm:block lg:max-w-none">
-                <Tab.List className="grid grid-cols-4 gap-6">
-                  {product.images &&
-                    product.images.map((image) => (
+            {product.images && product.images.length > 0 ? (
+              <Tab.Group as="div" className="flex flex-col-reverse">
+                {/* Image selector */}
+                <div className="hidden mt-6 w-full max-w-2xl mx-auto sm:block lg:max-w-none">
+                  <Tab.List className="grid grid-cols-4 gap-6">
+                    {product.images.map((image) => (
                       <Tab
                         key={image.id}
                         className="relative h-24 bg-white rounded-md flex items-center justify-center text-sm font-medium uppercase text-gray-900 cursor-pointer hover:bg-gray-50 focus:outline-none focus:ring focus:ring-offset-4 focus:ring-opacity-50"
@@ -54,7 +54,7 @@ export default function Product({ product }) {
                                 src={image.image_url}
                                 alt={`Product image of ${image.name}`}
                                 className="w-full h-full object-center object-cover"
-                                layout="fill"
+                                fill
                               />
                             </span>
                             <span
@@ -74,19 +74,35 @@ export default function Product({ product }) {
               </div>
 
               <Tab.Panels className="w-full aspect-w-1 aspect-h-1">
-                {product.images &&
-                  product.images.map((image) => (
+                {product.images.map((image) => (
                     <Tab.Panel key={image.id}>
                       <Image
                         src={image.image_url}
                         alt={`Product image of ${image.name}`}
                         className="w-full h-full sm:rounded-lg"
-                        layout="fill"
+                        fill
                       />
                     </Tab.Panel>
                   ))}
               </Tab.Panels>
             </Tab.Group>
+            ) : (
+              // Fallback when no product.images array
+              <div className="w-full aspect-w-1 aspect-h-1 bg-gray-200 rounded-lg overflow-hidden relative">
+                {product.image_url ? (
+                  <Image
+                    src={product.image_url}
+                    alt={`Product image of ${product.name}`}
+                    className="w-full h-full object-center object-cover"
+                    fill
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <span className="text-gray-400">No image available</span>
+                  </div>
+                )}
+              </div>
+            )}
             <div className="sticky top-4">
               <div className="flex flex-col space-y-4 pt-4">
                 <div>
@@ -114,7 +130,7 @@ export default function Product({ product }) {
                           );
                         }}
                       >
-                        <option value="" disabled selected>
+                        <option value="" disabled>
                           Select an Option
                         </option>
                         {product.options &&
@@ -141,7 +157,7 @@ export default function Product({ product }) {
                               slug: product.slug,
                               option: optionName,
                               name: product.name,
-                              image: product.image_url,
+                              image: product.image_url || (product.images && product.images.length > 0 && product.images[0].image_url) || null,
                               weight: product.weight,
                             });
                             updateCartSlide(true);
@@ -173,14 +189,12 @@ export default function Product({ product }) {
                         {product.instructions_url && (
                           <div>
                             {loggedIn ? (
-                              <Link href={product.instructions_url} passHref>
-                                <a className="text-lg cursor-pointer">
-                                  View Instructions
-                                </a>
+                              <Link href={product.instructions_url} className="text-lg cursor-pointer">
+                                View Instructions
                               </Link>
                             ) : (
-                              <Link href={`/login/`} passHref>
-                                <div className="text-lg cursor-pointer">
+                              <Link href={`/login/`} className="text-lg cursor-pointer">
+                                <div>
                                   View Instructions{" "}
                                   <span className="underline">
                                     (must login)
@@ -192,10 +206,8 @@ export default function Product({ product }) {
                         )}
                         <div>
                           {product.product_pdf_url && (
-                            <Link href={product.product_pdf_url} passHref>
-                              <a className="text-lg cursor-pointer">
-                                View PDF Product Sheet
-                              </a>
+                            <Link href={product.product_pdf_url} className="text-lg cursor-pointer">
+                              View PDF Product Sheet
                             </Link>
                           )}
                         </div>
@@ -261,7 +273,7 @@ export default function Product({ product }) {
                             src={bundle.image_url}
                             alt={`Related Bundle Product`}
                             className="w-full h-full object-center object-cover"
-                            layout="fill"
+                            fill
                           />
                         )}
                       </div>
@@ -278,10 +290,8 @@ export default function Product({ product }) {
                       </div>
                     </div>
                     <div className="mt-2 flex flex-col justify-center align-center mx-auto">
-                      <Link href={bundle.href} passHref>
-                        <a className="button text-center no-underline">
-                          View Product
-                        </a>
+                      <Link href={bundle.href} className="button text-center no-underline">
+                        View Product
                       </Link>
                     </div>
                   </div>
@@ -312,7 +322,7 @@ export default function Product({ product }) {
                             src={related.image_url}
                             alt={`Related Product`}
                             className="w-full h-full object-center object-cover"
-                            layout="fill"
+                            fill
                           />
                         )}
                       </div>
@@ -323,10 +333,8 @@ export default function Product({ product }) {
                       </div>
                     </div>
                     <div className="mt-2 flex flex-col justify-center align-center mx-auto">
-                      <Link href={related.href} passHref>
-                        <a className="button text-center no-underline">
-                          View Product
-                        </a>
+                      <Link href={related.href} className="button text-center no-underline">
+                        View Product
                       </Link>
                     </div>
                   </div>

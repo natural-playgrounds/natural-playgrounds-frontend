@@ -1,9 +1,8 @@
 import { useState } from "react";
 import axios from "axios";
-import { useToasts } from "react-toast-notifications";
+import toast from "react-hot-toast";
 const Login = () => {
   const [email, setEmail] = useState("");
-  const { addToast } = useToasts();
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -15,25 +14,17 @@ const Login = () => {
         email: email,
       });
       if (res.status === 200) {
-        addToast(
+        toast.success(
           "Please check your email for information on resetting the password.",
-          { appearance: "success", autoDismiss: true, autoDismissTimeout: 3000 }
+          { duration: 3000 }
         );
         setEmail("");
       } else {
-        addToast("Issue resetting your password.", {
-          appearance: "error",
-          autoDismiss: true,
-          autoDismissTimeout: 3000,
-        });
+        toast.error("Issue resetting your password.", { duration: 3000 });
         throw new Error(await res.data);
       }
     } catch (error) {
-      addToast("Issue resetting your password.", {
-        appearance: "error",
-        autoDismiss: true,
-        autoDismissTimeout: 3000,
-      });
+      toast.error("Issue resetting your password.", { duration: 3000 });
     }
   }
 

@@ -72,7 +72,7 @@ export default function Cart() {
                                     <Image
                                       src={product.image}
                                       alt={`Product Image of ${product.name}`}
-                                      layout="fill"
+                                      fill
                                       className="w-full h-full object-center object-cover"
                                     />
                                   )}
@@ -143,19 +143,20 @@ export default function Cart() {
                               </li>
                             ))
                           ) : (
-                            <Link href="/products/" passHref>
-                              <a className="relative block w-full border-2 border-gray-300 border-dashed rounded-lg p-12 text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 no-underline">
-                                <ShoppingCartIcon
-                                  className="mx-auto h-12 w-12 text-gray-400"
-                                  aria-hidden="true"
-                                />
-                                <span className="mt-2 block text-sm font-medium text-gray-900">
-                                  Your cart is empty!
-                                </span>
-                                <span className="mt-2 block text-sm font-medium text-gray-900 underline">
-                                  View our products
-                                </span>
-                              </a>
+                            <Link 
+                              href="/products/" 
+                              className="relative block w-full border-2 border-gray-300 border-dashed rounded-lg p-12 text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 no-underline"
+                            >
+                              <ShoppingCartIcon
+                                className="mx-auto h-12 w-12 text-gray-400"
+                                aria-hidden="true"
+                              />
+                              <span className="mt-2 block text-sm font-medium text-gray-900">
+                                Your cart is empty!
+                              </span>
+                              <span className="mt-2 block text-sm font-medium text-gray-900 underline">
+                                View our products
+                              </span>
                             </Link>
                           )}
                         </ul>
@@ -172,13 +173,12 @@ export default function Cart() {
                       Shipping is estimated at checkout.
                     </p>
                     <div className="mt-6">
-                      <Link href="/checkout/" passHref>
-                        <a
-                          className="flex justify-center items-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-green-600 hover:bg-green-700 no-underline"
-                          onClick={() => updateCartSlide(false)}
-                        >
-                          Checkout
-                        </a>
+                      <Link 
+                        href="/checkout/" 
+                        className="flex justify-center items-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-green-600 hover:bg-green-700 no-underline"
+                        onClick={() => updateCartSlide(false)}
+                      >
+                        Checkout
                       </Link>
                     </div>
                     <div className="mt-6 flex justify-center text-sm text-center text-gray-500">

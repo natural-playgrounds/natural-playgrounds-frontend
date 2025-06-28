@@ -16,10 +16,10 @@ export default function Instructions({ product }) {
       <div className="max-w-2xl mx-auto lg:max-w-none">
         <div className="flex flex-row justify-between items-center">
           <div>
-            <Link href={`/products/${product.slug}`} passHref>
-              <a className="text-gray-600 text-sm">View Product</a>
+            <Link href={`/products/${product.slug}`} className="text-gray-600 text-sm">
+              View Product
             </Link>
-            <Link href={`/products/${product.slug}`} passHref>
+            <Link href={`/products/${product.slug}`}>
               <h1>{product.name}</h1>
             </Link>
           </div>

@@ -6,7 +6,7 @@ import { withAuthSync } from "../lib/auth";
 import axios from "axios";
 import Image from "next/image";
 import Autocomplete from "react-google-autocomplete";
-import { useToasts } from "react-toast-notifications";
+import toast from "react-hot-toast";
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
@@ -21,7 +21,6 @@ const Profile = (props) => {
   const [errorMsg, setErrorMsg] = useState("");
   const [billingDirty, setBillingDirty] = useState(false);
   const [shippingDirty, setShippingDirty] = useState(false);
-  const { addToast } = useToasts();
 
   async function handleSubmit(e) {
     try {
@@ -40,11 +39,7 @@ const Profile = (props) => {
       });
 
       if (res.status === 201) {
-        addToast("Account Updated", {
-          appearance: "success",
-          autoDismiss: true,
-          autoDismissTimeout: 3000,
-        });
+        toast.success("Account Updated", { duration: 3000 });
       } else {
         throw new Error(await res.data);
       }
@@ -366,7 +361,7 @@ const Profile = (props) => {
                                     src={product.image}
                                     alt={`Product image for ${product.name}`}
                                     className="col-start-2 col-end-3 sm:col-start-1 sm:row-start-1 sm:row-span-2rounded-lg object-center object-cover "
-                                    layout="fill"
+                                    fill
                                   />
                                 )}
                               </div>
@@ -385,15 +380,28 @@ const Profile = (props) => {
   );
 };
 
-Profile.getInitialProps = async (ctx) => {
+export async function getServerSideProps(ctx) {
   const { token } = nextCookie(ctx);
+  
+  // Auth check - redirect if no token
+  if (!token) {
+    return {
+      redirect: {
+        destination: "/login",
+        permanent: false,
+      },
+    };
+  }
+
   var environment = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
   const apiUrl = `${environment}/api/account/`;
 
-  const redirectOnError = () =>
-    typeof window !== "undefined"
-      ? Router.push("/login")
-      : ctx.res.writeHead(302, { Location: "/login" }).end();
+  const redirectOnError = () => ({
+    redirect: {
+      destination: "/login",
+      permanent: false,
+    },
+  });
 
   try {
     const response = await axios.post(apiUrl, {
@@ -402,15 +410,17 @@ Profile.getInitialProps = async (ctx) => {
 
     if (response.status == 201) {
       const data = await response.data;
-      return data;
+      return {
+        props: { ...data, token },
+      };
     } else {
       // https://github.com/developit/unfetch#caveats
-      return await redirectOnError();
+      return redirectOnError();
     }
   } catch (error) {
     // Implementation or Network error
     return redirectOnError();
   }
-};
+}
 
 export default withAuthSync(Profile);
