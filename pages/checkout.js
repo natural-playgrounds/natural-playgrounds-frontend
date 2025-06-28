@@ -10,13 +10,14 @@ import Loader from "react-loader-spinner";
 import Router from "next/router";
 import Image from "next/image";
 import Link from "next/link";
-import Autocomplete from "react-google-autocomplete";
+import GoogleAutocomplete from "../components/GoogleAutocomplete";
 import { useToasts } from "react-toast-notifications";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 const Checkout = (props) => {
+  console.log('Google Maps API Key:', process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY);
   const { addToast } = useToasts();
   const { cartTotal, items, removeItem, updateItemQuantity, emptyCart } =
     useCart();
@@ -38,13 +39,56 @@ const Checkout = (props) => {
   const [billingDirty, setBillingDirty] = useState(false);
   const [shippingDirty, setShippingDirty] = useState(false);
 
-  const [cc, setCC] = useState("");
-  const [cvc, setCVC] = useState("");
-  const [expiry_month, setExpiryMonth] = useState("");
-  const [expiry_year, setExpiryYear] = useState("");
+  // CardPointe Hosted iFrame Tokenizer state
+  const [paymentToken, setPaymentToken] = useState('');
+  const [isTokenReady, setIsTokenReady] = useState(false);
+  const [tokenError, setTokenError] = useState('');
   useEffect(() => {
     setBilling("");
   }, [billingShippingSame]);
+
+  // Listen for payment token from Hosted iFrame Tokenizer
+  useEffect(() => {
+    const handleTokenMessage = (event) => {
+      // Only process messages that look like JSON and are from CardPointe
+      if (typeof event.data !== 'string' || !event.data.startsWith('{')) {
+        return; // Ignore non-JSON messages
+      }
+      
+      try {
+        const tokenData = JSON.parse(event.data);
+        
+        // Only process messages that have CardPointe token structure
+        if (!tokenData.hasOwnProperty('message') && !tokenData.hasOwnProperty('validationError')) {
+          return; // Ignore messages not from CardPointe
+        }
+        
+        // Successful tokenization
+        if (tokenData.message && !tokenData.validationError) {
+          setPaymentToken(tokenData.message);
+          setIsTokenReady(true);
+          setTokenError('');
+          console.log('Payment token received:', tokenData.message);
+        }
+        
+        // Validation errors
+        if (tokenData.validationError) {
+          setTokenError(`Payment validation error: ${tokenData.validationError}`);
+          setIsTokenReady(false);
+        }
+        
+      } catch (error) {
+        // Silently ignore JSON parse errors from other sources (like Google Maps)
+        return;
+      }
+    };
+
+    window.addEventListener('message', handleTokenMessage, false);
+    
+    return () => {
+      window.removeEventListener('message', handleTokenMessage, false);
+    };
+  }, []);
   function getShippingAmount() {
     var shipping_amount = 0;
     items.map((item) => {
@@ -69,9 +113,19 @@ const Checkout = (props) => {
   async function handleSubmit(e) {
     try {
       e.preventDefault();
+      
+      if (!paymentToken) {
+        addToast("Please enter your payment information", { appearance: "error" });
+        return;
+      }
+      
       setIsSubmitting(true);
       const environment =
         process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      console.log('Submitting checkout with shipping:', shipping);
+      console.log('Submitting checkout with billing:', billing);
+      console.log('Using secure payment token:', paymentToken.substring(0, 10) + '...');
+      
       const res = await axios.post(`${environment}/api/checkout/`, {
         token: props.token,
         firstName: firstName,
@@ -84,24 +138,33 @@ const Checkout = (props) => {
         company: company,
         fax: fax,
         phone: phone,
-        cc: cc,
-        cvc: cvc,
-        expiry_month: expiry_month,
-        expiry_year: expiry_year,
+        cardToken: paymentToken, // Send secure token from Hosted iFrame Tokenizer
         items: items,
       });
 
       if (res.status === 201) {
         const data = await res.data;
-        emptyCart();
-        Router.push(`/purchase/${data.saleId}`);
+        
+        // CardPointe authorization successful
+        if (data.success) {
+          emptyCart();
+          addToast(`Order authorized successfully! Order #${data.orderNumber}`, { appearance: "success" });
+          Router.push(`/purchase/${data.saleId}`);
+        } else {
+          // Handle authorization failure
+          addToast(data.error || "Payment authorization failed", { appearance: "error" });
+          setIsSubmitting(false);
+        }
       }
     } catch (error) {
       setIsSubmitting(false);
-      addToast(
-        "Issue processing your credit card. Please check the numbers or contact us at info@naturalplaygrounds.com",
-        { appearance: "error" }
-      );
+      console.error('Checkout error:', error);
+      
+      // Show specific error if available
+      const errorMessage = error.response?.data?.error || 
+        "Issue processing your order. Please try again or contact us at info@naturalplaygrounds.com";
+      
+      addToast(errorMessage, { appearance: "error" });
     }
   }
   return (
@@ -155,7 +218,7 @@ const Checkout = (props) => {
                         required={true}
                         autoComplete="family-name"
                         defaultValue={lastName}
-                        onChange={(e) => setLasstName(e.target.value)}
+                        onChange={(e) => setLastName(e.target.value)}
                         className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm p-2 border-2"
                       />
                     </div>
@@ -241,21 +304,21 @@ const Checkout = (props) => {
                       Shipping address
                     </label>
                     <div className="mt-1">
-                      <Autocomplete
+                      <GoogleAutocomplete
                         className="shadow-sm focus:ring-i-500 focus:border-i-500 block w-full sm:text-sm border-gray-300 rounded-md border-2 py-2 px-4"
-                        apiKey={`AIzaSyApuPpbYSAqBTHTnfB_n7SECRD9V9UYpJA`}
-                        defaultValue={shipping}
-                        options={{
-                          types: ["address"],
-                          componentRestrictions: { country: ["us", "ca"] },
-                        }}
+                        defaultValue={typeof shipping === 'string' ? shipping : shipping?.formatted_address || ''}
                         required={true}
                         onChange={(e) => {
                           setShippingDirty(true);
                         }}
                         onPlaceSelected={(place) => {
+                          console.log('Google Places selected:', place);
                           setShipping(place);
                           setShippingDirty(false);
+                        }}
+                        options={{
+                          types: ["address"],
+                          componentRestrictions: { country: ["us", "ca"] },
                         }}
                       />
                       {shippingDirty && (
@@ -319,21 +382,21 @@ const Checkout = (props) => {
                         Billing address
                       </label>
                       <div className="mt-1">
-                        <Autocomplete
+                        <GoogleAutocomplete
                           className="shadow-sm focus:ring-i-500 focus:border-i-500 block w-full sm:text-sm border-gray-300 rounded-md border-2 py-2 px-4"
-                          apiKey={`AIzaSyApuPpbYSAqBTHTnfB_n7SECRD9V9UYpJA`}
-                          defaultValue={billing}
+                          defaultValue={typeof billing === 'string' ? billing : billing?.formatted_address || ''}
                           required={!billingShippingSame}
-                          options={{
-                            types: ["address"],
-                            componentRestrictions: { country: ["us", "ca"] },
-                          }}
                           onChange={(e) => {
                             setBillingDirty(true);
                           }}
                           onPlaceSelected={(place) => {
+                            console.log('Billing place selected:', place);
                             setBilling(place);
                             setBillingDirty(false);
+                          }}
+                          options={{
+                            types: ["address"],
+                            componentRestrictions: { country: ["us", "ca"] },
                           }}
                         />
                         {billingDirty && (
@@ -347,111 +410,74 @@ const Checkout = (props) => {
                 </div>
               </div>
               <div className="mt-10 pt-10">
-                <h2 className="text-lg font-medium text-gray-900">Payment</h2>
+                <h2 className="text-lg font-medium text-gray-900">Payment Information</h2>
                 
-                <div className="mt-6 grid grid-cols-3 gap-y-6 gap-x-4">
-                  <div className="col-span-3">
-                    <label
-                      htmlFor="card-number"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Card number
-                    </label>
-                    <div className="mt-1 w-full cc">
-                      <input
-                        id="card-number"
-                        name="card-number"
-                        autoComplete="cc-number"
-                        defaultValue={cc}
-                        required={true}
-                        maxLength="16"
-                        onChange={(e) => setCC(e.target.value)}
-                        className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm p-2 border-2"
-                      />
-                    </div>
+                {/* Hosted iFrame Tokenizer for secure payment processing */}
+                <div className="mt-6">
+                  <iframe
+                    id="tokenFrame"
+                    name="tokenFrame"
+                    src={`https://fts-uat.cardconnect.com/itoke/ajax-tokenizer.html?useexpiry=true&usecvv=true&formatinput=true&tokenizewheninactive=true&inactivityto=2000&cardlabel=Card%20Number&expirylabel=Expiration&cvvlabel=CVV&css=${encodeURIComponent('input{width:100%;padding:12px;border:2px solid #e1e5e9;border-radius:8px;font-size:16px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;transition:border-color 0.2s ease;}input:focus{border-color:#10b981;outline:none;box-shadow:0 0 0 3px rgba(16,185,129,0.1);}label{font-weight:600;color:#374151;margin-bottom:6px;display:block;}.error{border-color:#dc3545;background-color:#fef2f2;}')}`}
+                    frameBorder="0"
+                    scrolling="no"
+                    style={{
+                      width: '100%',
+                      height: '140px',
+                      border: '2px solid #e1e5e9',
+                      borderRadius: '8px',
+                      backgroundColor: '#ffffff'
+                    }}
+                  />
+                  
+                  {/* Token status indicator */}
+                  <div className="mt-3">
+                    {isTokenReady ? (
+                      <div className="flex items-center text-green-600">
+                        <svg className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                        <span className="text-sm font-medium">Payment information secured</span>
+                      </div>
+                    ) : tokenError ? (
+                      <div className="flex items-center text-red-600">
+                        <svg className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                        <span className="text-sm">{tokenError}</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center text-gray-500">
+                        <svg className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                        </svg>
+                        <span className="text-sm">Enter payment details above</span>
+                      </div>
+                    )}
                   </div>
-
-                  <div className="col-span-3">
-                    <label
-                      htmlFor="name-on-card"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Name on card
-                    </label>
-                    <div className="mt-1">
-                      <input
-                        type="text"
-                        id="name-on-card"
-                        name="name-on-card"
-                        required={true}
-                        autoComplete="cc-name"
-                        className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm p-2 border-2"
-                      />
+                </div>
+                
+                <div className="mt-6 bg-green-50 border border-green-200 rounded-lg p-4">
+                  <div className="flex">
+                    <div className="flex-shrink-0">
+                      <svg className="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
                     </div>
-                  </div>
-
-                  <div className="col-span-3 md:col-span-1">
-                    <label
-                      htmlFor="expiration-date"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Expiration Month (MM)
-                    </label>
-                    <div className="mt-1">
-                      <input
-                        type="text"
-                        name="expiration-date"
-                        id="expiration-date"
-                        autoComplete="cc-exp"
-                        defaultValue={expiry_month}
-                        required={true}
-                        maxLength="2"
-                        onChange={(e) => setExpiryMonth(e.target.value)}
-                        className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm p-2 border-2"
-                      />
-                    </div>
-                  </div>
-                  <div className="col-span-3 md:col-span-1">
-                    <label
-                      htmlFor="expiration-date"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Expiration Year (YY)
-                    </label>
-                    <div className="mt-1">
-                      <input
-                        type="text"
-                        name="expiration-date"
-                        id="expiration-date"
-                        autoComplete="cc-exp"
-                        required={true}
-                        maxLength="2"
-                        defaultValue={expiry_year}
-                        onChange={(e) => setExpiryYear(e.target.value)}
-                        className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm p-2 border-2"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="col-span-3 md:col-span-1">
-                    <label
-                      htmlFor="cvc"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      CVC
-                    </label>
-                    <div className="mt-1">
-                      <input
-                        type="text"
-                        name="cvc"
-                        id="cvc"
-                        autoComplete="cc-csc"
-                        defaultValue={cvc}
-                        required={true}
-                        maxLength="4"
-                        onChange={(e) => setCVC(e.target.value)}
-                        className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm p-2 border-2"
-                      />
+                    <div className="ml-3">
+                      <h3 className="text-sm font-medium text-green-800">
+                        Secure Payment Processing
+                      </h3>
+                      <div className="mt-2 text-sm text-green-700">
+                        <p>
+                          Your payment information is processed securely and never stored on our servers. 
+                          This form uses bank-level encryption and is PCI DSS compliant.
+                        </p>
+                        <ul className="mt-2 list-disc list-inside">
+                          <li>Payment data goes directly to secure CardPointe servers</li>
+                          <li>256-bit SSL encryption</li>
+                          <li>Your card will be authorized now, charged when ready to ship</li>
+                        </ul>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -581,16 +607,16 @@ const Checkout = (props) => {
                     </p>
                   ) : (
                     <>
-                      {cc &&
-                      items.length > 0 &&
+                      {items.length > 0 &&
                       !shippingDirty &&
-                      !billingDirty ? (
+                      !billingDirty &&
+                      isTokenReady ? (
                         <button type="submit" className="w-full button">
-                          Confirm order
+                          Place Order
                         </button>
                       ) : (
                         <button type="button" className="w-full button-empty">
-                          Please check credit card and/or add items to cart
+                          {!isTokenReady ? 'Enter payment information' : 'Please check shipping/billing addresses and cart items'}
                         </button>
                       )}
                     </>

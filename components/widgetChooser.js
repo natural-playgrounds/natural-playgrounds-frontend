@@ -72,6 +72,8 @@ export default function WidgetChooser({ obj, results, category }) {
                           className="w-full h-full object-cover"
                           src={Bark}
                           alt="CTA Bark"
+                          layout="fill"
+                          objectFit="cover"
                         />
                       </div>
                       <p className="relative font-bold text-lg uppercase">
