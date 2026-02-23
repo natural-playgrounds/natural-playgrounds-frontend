@@ -80,15 +80,6 @@ export async function getStaticProps({ params }) {
   }
 }
 
-  return {
-    props: {
-      page: await res.json(),
-      results: await results.json(),
-      selected: await selected.json(),
-      category: await category.json(),
-    },
-  };
-}
 export async function getStaticPaths() {
   return {
     paths: [],
