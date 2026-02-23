@@ -35,18 +35,50 @@ export default function Page({ page, results, selected, category }) {
 }
 
 export async function getStaticProps({ params }) {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/pages/${params.slug}/?format=json`
-  );
-  const results = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/search/home/?format=json`
-  );
-  const selected = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/search/selected/?format=json`
-  );
-  const category = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/search/category/?format=json`
-  );
+  try {
+    const base = process.env.NEXT_PUBLIC_API_URL;
+
+    const res = await fetch(
+      `${base}/api/pages/${params.slug}/?format=json`
+    );
+    const results = await fetch(
+      `${base}/api/search/home/?format=json`
+    );
+    const selected = await fetch(
+      `${base}/api/search/selected/?format=json`
+    );
+    const category = await fetch(
+      `${base}/api/search/category/?format=json`
+    );
+
+    return {
+      props: {
+        page: await res.json(),
+        results: await results.json(),
+        selected: await selected.json(),
+        category: await category.json(),
+      },
+      revalidate: 60,
+    };
+  } catch (e) {
+    return {
+      props: {
+        page: {
+          title: "Coming soon",
+          sub_title: "",
+          seo_description: "",
+          seo_keywords: "",
+          widgets: [],
+          testimonial: null,
+        },
+        results: [],
+        selected: [],
+        category: [],
+      },
+      revalidate: 60,
+    };
+  }
+}
 
   return {
     props: {
