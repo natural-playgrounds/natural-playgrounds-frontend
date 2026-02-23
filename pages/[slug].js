@@ -58,19 +58,8 @@ export async function getStaticProps({ params }) {
   };
 }
 export async function getStaticPaths() {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/pages/?format=json`
-  );
-  const pages = await res.json();
-  const paths = pages.map((page) => {
-    return {
-      params: {
-        slug: page.slug.toString(),
-      },
-    };
-  });
   return {
-    paths,
-    fallback: false,
+    paths: [],
+    fallback: "blocking",
   };
 }
