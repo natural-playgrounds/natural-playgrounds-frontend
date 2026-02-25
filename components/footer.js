@@ -113,7 +113,7 @@ export default function Footer() {
             />
             <p className="text-sm ">
               &copy; 2013 - {new Date().getFullYear()} Natural Playgrounds
-              Company. All rights reserved.
+              Company. All rights reserved.  v1
             </p>
           </div>
         </div>
