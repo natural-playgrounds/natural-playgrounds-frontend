@@ -12,6 +12,17 @@ const Login = () => {
 
     if (errorMsg) setErrorMsg("");
 
+    const formatFieldErrors = (data) => {
+      if (!data || typeof data !== "object") return "";
+      const entries = Object.entries(data).filter(
+        ([key, value]) => key !== "non_field_errors" && Array.isArray(value)
+      );
+      if (!entries.length) return "";
+      return entries
+        .map(([key, value]) => `${key}: ${value.join(" ")}`)
+        .join(" ");
+    };
+
     try {
       var environment =
         process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -30,12 +41,17 @@ const Login = () => {
         throw new Error(await res.data);
       }
     } catch (error) {
-      if (
-        error.response &&
-        error.response.data &&
-        error.response.data.non_field_errors
-      ) {
-        setErrorMsg(error.response.data.non_field_errors[0]);
+      console.log(error.response);
+      const responseData = error?.response?.data;
+      const nonFieldError = responseData?.non_field_errors?.[0];
+      const fieldErrors = formatFieldErrors(responseData);
+
+      if (nonFieldError) {
+        setErrorMsg(nonFieldError);
+      } else if (fieldErrors) {
+        setErrorMsg(fieldErrors);
+      } else {
+        setErrorMsg("Registration failed. Please check your details.");
       }
     }
   }

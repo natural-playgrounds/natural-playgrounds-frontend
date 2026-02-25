@@ -17,7 +17,6 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 const Checkout = (props) => {
-  console.log('Google Maps API Key:', process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY);
   const { cartTotal, items, removeItem, updateItemQuantity, emptyCart } =
     useCart();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -37,6 +36,7 @@ const Checkout = (props) => {
   const [lastName, setLastName] = useState(props.last_name);
   const [billingDirty, setBillingDirty] = useState(false);
   const [shippingDirty, setShippingDirty] = useState(false);
+  const [hasMounted, setHasMounted] = useState(false);
 
   // CardPointe Hosted iFrame Tokenizer state
   const [paymentToken, setPaymentToken] = useState('');
@@ -46,6 +46,14 @@ const Checkout = (props) => {
     setBilling("");
   }, [billingShippingSame]);
 
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
+
+  useEffect(() => {
+    updateShippingAmount(getShippingAmount());
+  }, [items]);
+
   // Listen for payment token from Hosted iFrame Tokenizer
   useEffect(() => {
     const handleTokenMessage = (event) => {
@@ -53,15 +61,15 @@ const Checkout = (props) => {
       if (typeof event.data !== 'string' || !event.data.startsWith('{')) {
         return; // Ignore non-JSON messages
       }
-      
+
       try {
         const tokenData = JSON.parse(event.data);
-        
+
         // Only process messages that have CardPointe token structure
         if (!tokenData.hasOwnProperty('message') && !tokenData.hasOwnProperty('validationError')) {
           return; // Ignore messages not from CardPointe
         }
-        
+
         // Successful tokenization
         if (tokenData.message && !tokenData.validationError) {
           setPaymentToken(tokenData.message);
@@ -69,13 +77,13 @@ const Checkout = (props) => {
           setTokenError('');
           console.log('Payment token received:', tokenData.message);
         }
-        
+
         // Validation errors
         if (tokenData.validationError) {
           setTokenError(`Payment validation error: ${tokenData.validationError}`);
           setIsTokenReady(false);
         }
-        
+
       } catch (error) {
         // Silently ignore JSON parse errors from other sources (like Google Maps)
         return;
@@ -83,48 +91,42 @@ const Checkout = (props) => {
     };
 
     window.addEventListener('message', handleTokenMessage, false);
-    
+
     return () => {
       window.removeEventListener('message', handleTokenMessage, false);
     };
   }, []);
   function getShippingAmount() {
-    var shipping_amount = 0;
+    var total_amount = 0;
     items.map((item) => {
-      shipping_amount =
-        shipping_amount + parseFloat(item.quantity * item.weight);
+      total_amount =
+        total_amount + parseFloat(item.quantity * item.price);
     });
-    if (shipping_amount >= 300 && cartTotal < 1500) {
-      return 600;
-    }
-    if (shipping_amount > 300) {
-      return cartTotal * 1.33;
-    }
-    if (shipping_amount >= 100) {
-      return cartTotal * 1.3;
-    }
-    if (shipping_amount >= 40) {
-      return cartTotal * 1.1;
-    }
 
-    return shipping_amount;
+    if (total_amount <= 1000) {
+      return total_amount * 0.35;
+    }
+    else if (total_amount <= 5000) {
+      return total_amount * 0.25;
+    }
+    return total_amount * 0.20;
   }
   async function handleSubmit(e) {
     try {
       e.preventDefault();
-      
+
       if (!paymentToken) {
         toast.error("Please enter your payment information");
         return;
       }
-      
+
       setIsSubmitting(true);
       const environment =
         process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
       console.log('Submitting checkout with shipping:', shipping);
       console.log('Submitting checkout with billing:', billing);
       console.log('Using secure payment token:', paymentToken.substring(0, 10) + '...');
-      
+
       const res = await axios.post(`${environment}/api/checkout/`, {
         token: props.token,
         firstName: firstName,
@@ -143,7 +145,7 @@ const Checkout = (props) => {
 
       if (res.status === 201) {
         const data = await res.data;
-        
+
         // CardPointe authorization successful
         if (data.success) {
           emptyCart();
@@ -158,11 +160,11 @@ const Checkout = (props) => {
     } catch (error) {
       setIsSubmitting(false);
       console.error('Checkout error:', error);
-      
+
       // Show specific error if available
-      const errorMessage = error.response?.data?.error || 
+      const errorMessage = error.response?.data?.error ||
         "Issue processing your order. Please try again or contact us at info@naturalplaygrounds.com";
-      
+
       toast.error(errorMessage);
     }
   }
@@ -410,7 +412,7 @@ const Checkout = (props) => {
               </div>
               <div className="mt-10 pt-10">
                 <h2 className="text-lg font-medium text-gray-900">Payment Information</h2>
-                
+
                 {/* Hosted iFrame Tokenizer for secure payment processing */}
                 <div className="mt-6">
                   <iframe
@@ -427,7 +429,7 @@ const Checkout = (props) => {
                       backgroundColor: '#ffffff'
                     }}
                   />
-                  
+
                   {/* Token status indicator */}
                   <div className="mt-3">
                     {isTokenReady ? (
@@ -454,7 +456,7 @@ const Checkout = (props) => {
                     )}
                   </div>
                 </div>
-                
+
                 <div className="mt-6 bg-green-50 border border-green-200 rounded-lg p-4">
                   <div className="flex">
                     <div className="flex-shrink-0">
@@ -468,7 +470,7 @@ const Checkout = (props) => {
                       </h3>
                       <div className="mt-2 text-sm text-green-700">
                         <p>
-                          Your payment information is processed securely and never stored on our servers. 
+                          Your payment information is processed securely and never stored on our servers.
                           This form uses bank-level encryption and is PCI DSS compliant.
                         </p>
                         <ul className="mt-2 list-disc list-inside">
@@ -491,136 +493,144 @@ const Checkout = (props) => {
 
               <div className="mt-4 bg-white border border-gray-200 rounded-lg shadow-sm">
                 <h3 className="sr-only">Items in your cart</h3>
-                <ul role="list" className="divide-y divide-gray-200">
-                  {items.map((item) => (
-                    <li key={item.id} className="flex py-6 px-4 sm:px-6">
-                      <div className="flex-shrink-0 h-32 w-32 relative">
-                        {item.image && (
-                          <Image
-                            src={item.image}
-                            alt={`Product Image of ${item.name}`}
-                            className="object-center object-cover"
-                            fill
-                          />
-                        )}
-                      </div>
-
-                      <div className="ml-6 flex-1 flex flex-col">
-                        <div className="flex">
-                          <div className="min-w-0 flex-1">
-                            <h4 className="text-sm">
-                              <Link
-                                href={`/products/${item.slug}`}
-                                className="font-medium text-gray-700 hover:text-gray-800"
-                              >
-                                {item.name}
-                              </Link>
-                            </h4>
-                            <p className="mt-1 text-sm text-gray-500">
-                              {item.option}
-                            </p>
-                          </div>
-
-                          <div className="ml-4 flex-shrink-0 flow-root">
-                            <button
-                              type="button"
-                              className="-m-2.5 bg-white p-2 border-2.5 flex items-center justify-center text-gray-400 hover:text-gray-500"
-                              onClick={() => removeItem(item.id)}
-                            >
-                              <span className="sr-only">Remove</span>
-                              <TrashIcon
-                                className="h-5 w-5"
-                                aria-hidden="true"
+                {hasMounted ? (
+                  <>
+                    <ul role="list" className="divide-y divide-gray-200">
+                      {items.map((item) => (
+                        <li key={item.id} className="flex py-6 px-4 sm:px-6">
+                          <div className="flex-shrink-0 h-32 w-32 relative">
+                            {item.image && (
+                              <Image
+                                src={item.image}
+                                alt={`Product Image of ${item.name}`}
+                                className="object-center object-cover"
+                                fill
                               />
-                            </button>
+                            )}
                           </div>
-                        </div>
 
-                        <div className="pt-2 flex items-end justify-between">
-                          <p className="mt-1 text-sm font-medium text-gray-900">
-                            ${item.price}
-                          </p>
+                          <div className="ml-6 flex-1 flex flex-col">
+                            <div className="flex">
+                              <div className="min-w-0 flex-1">
+                                <h4 className="text-sm">
+                                  <Link
+                                    href={`/products/${item.slug}`}
+                                    className="font-medium text-gray-700 hover:text-gray-800"
+                                  >
+                                    {item.name}
+                                  </Link>
+                                </h4>
+                                <p className="mt-1 text-sm text-gray-500">
+                                  {item.option}
+                                </p>
+                              </div>
 
-                          <div className="ml-4 w-16">
-                            <label htmlFor="quantity" className="sr-only">
-                              Quantity
-                            </label>
-                            <select
-                              id={`quantity-${item.id}`}
-                              name={`quantity-${item.id}`}
-                              value={item.quantity}
-                              onChange={(e) => {
-                                updateItemQuantity(item.id, e.target.value);
-                              }}
-                              className="w-full max-w-full rounded-md border border-gray-300 py-1.5 text-base leading-5 font-medium text-gray-700 text-left shadow-sm focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500 sm:text-sm"
-                            >
-                              <option value={1}>1</option>
-                              <option value={2}>2</option>
-                              <option value={3}>3</option>
-                              <option value={4}>4</option>
-                              <option value={5}>5</option>
-                              <option value={6}>6</option>
-                              <option value={7}>7</option>
-                              <option value={8}>8</option>
-                            </select>
+                              <div className="ml-4 flex-shrink-0 flow-root">
+                                <button
+                                  type="button"
+                                  className="-m-2.5 bg-white p-2 border-2.5 flex items-center justify-center text-gray-400 hover:text-gray-500"
+                                  onClick={() => removeItem(item.id)}
+                                >
+                                  <span className="sr-only">Remove</span>
+                                  <TrashIcon
+                                    className="h-5 w-5"
+                                    aria-hidden="true"
+                                  />
+                                </button>
+                              </div>
+                            </div>
+
+                            <div className="pt-2 flex items-end justify-between">
+                              <p className="mt-1 text-sm font-medium text-gray-900">
+                                ${item.price}
+                              </p>
+
+                              <div className="ml-4 w-16">
+                                <label htmlFor="quantity" className="sr-only">
+                                  Quantity
+                                </label>
+                                <select
+                                  id={`quantity-${item.id}`}
+                                  name={`quantity-${item.id}`}
+                                  value={item.quantity}
+                                  onChange={(e) => {
+                                    updateItemQuantity(item.id, e.target.value);
+                                  }}
+                                  className="w-full max-w-full rounded-md border border-gray-300 py-1.5 text-base leading-5 font-medium text-gray-700 text-left shadow-sm focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500 sm:text-sm"
+                                >
+                                  <option value={1}>1</option>
+                                  <option value={2}>2</option>
+                                  <option value={3}>3</option>
+                                  <option value={4}>4</option>
+                                  <option value={5}>5</option>
+                                  <option value={6}>6</option>
+                                  <option value={7}>7</option>
+                                  <option value={8}>8</option>
+                                </select>
+                              </div>
+                            </div>
                           </div>
-                        </div>
+                        </li>
+                      ))}
+                    </ul>
+                    <dl className="border-t border-gray-200 py-6 px-4 space-y-6 sm:px-6">
+                      <div className="flex items-center justify-between">
+                        <dt className="text-sm">Subtotal</dt>
+                        <dd className="text-sm font-medium text-gray-900">
+                          ${cartTotal.toFixed(2)}
+                        </dd>
                       </div>
-                    </li>
-                  ))}
-                </ul>
-                <dl className="border-t border-gray-200 py-6 px-4 space-y-6 sm:px-6">
-                  <div className="flex items-center justify-between">
-                    <dt className="text-sm">Subtotal</dt>
-                    <dd className="text-sm font-medium text-gray-900">
-                      ${cartTotal.toFixed(2)}
-                    </dd>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <dt className="text-sm">
-                      Shipping
-                      <br />
-                      <div className="w-3/4 text-xs italic">
-                        This is our best guess. Due to the nature of our
-                        products we put an estimate together. Once the product
-                        is ready to ship, we&lsquo;ll reach back out with actual
-                        shipping amounts. Your card will be charge then.
+                      <div className="flex items-center justify-between">
+                        <dt className="text-sm">
+                          Shipping
+                          <br />
+                          <div className="w-3/4 text-xs italic">
+                            This is our best guess. Due to the nature of our
+                            products we put an estimate together. Once the product
+                            is ready to ship, we&lsquo;ll reach back out with actual
+                            shipping amounts. Your card will be charge then.
+                          </div>
+                        </dt>
+                        <dd className="text-sm font-medium text-gray-900">
+                          ${shippingAmount.toFixed(2)}
+                        </dd>
                       </div>
-                    </dt>
-                    <dd className="text-sm font-medium text-gray-900">
-                      ${shippingAmount.toFixed(2)}
-                    </dd>
-                  </div>
-                  <div className="flex items-center justify-between border-t border-gray-200 pt-6">
-                    <dt className="text-base font-medium">Total</dt>
-                    <dd className="text-base font-medium text-gray-900">
-                      ${(cartTotal + shippingAmount).toFixed(2)}
-                    </dd>
-                  </div>
-                </dl>
+                      <div className="flex items-center justify-between border-t border-gray-200 pt-6">
+                        <dt className="text-base font-medium">Total</dt>
+                        <dd className="text-base font-medium text-gray-900">
+                          ${(cartTotal + shippingAmount).toFixed(2)}
+                        </dd>
+                      </div>
+                    </dl>
 
-                <div className="border-t border-gray-200 py-6 px-4 sm:px-6">
-                  {items.length <= 0 ? (
-                    <p className="text-white bg-red-600 p-4 border-left-4 border-red-800">
-                      Cart can&apos;t be empty
-                    </p>
-                  ) : (
-                    <>
-                      {items.length > 0 &&
-                      !shippingDirty &&
-                      !billingDirty &&
-                      isTokenReady ? (
-                        <button type="submit" className="w-full button">
-                          Place Order
-                        </button>
+                    <div className="border-t border-gray-200 py-6 px-4 sm:px-6">
+                      {items.length <= 0 ? (
+                        <p className="text-white bg-red-600 p-4 border-left-4 border-red-800">
+                          Cart can&apos;t be empty
+                        </p>
                       ) : (
-                        <button type="button" className="w-full button-empty">
-                          {!isTokenReady ? 'Enter payment information' : 'Please check shipping/billing addresses and cart items'}
-                        </button>
+                        <>
+                          {items.length > 0 &&
+                            !shippingDirty &&
+                            !billingDirty &&
+                            isTokenReady ? (
+                            <button type="submit" className="w-full button">
+                              Place Order
+                            </button>
+                          ) : (
+                            <button type="button" className="w-full button-empty">
+                              {!isTokenReady ? 'Enter payment information' : 'Please check shipping/billing addresses and cart items'}
+                            </button>
+                          )}
+                        </>
                       )}
-                    </>
-                  )}
-                </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="py-6 px-4 sm:px-6 text-sm text-gray-500">
+                    Loading cart...
+                  </div>
+                )}
               </div>
             </div>
           </form>
@@ -635,7 +645,7 @@ const Checkout = (props) => {
 };
 export async function getServerSideProps(ctx) {
   const { token } = nextCookie(ctx);
-  
+
   // Auth check - redirect if no token
   if (!token) {
     return {
