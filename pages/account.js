@@ -124,7 +124,7 @@ const Profile = (props) => {
                 <div className="mt-1">
                   <Autocomplete
                     className="shadow-sm focus:ring-i-500 focus:border-i-500 block w-full sm:text-sm border-gray-300 rounded-md border-2 py-2 px-4"
-                    apiKey={`AIzaSyApuPpbYSAqBTHTnfB_n7SECRD9V9UYpJA`}
+                    apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}
                     defaultValue={props.raw_shipping}
                     options={{
                       types: ["address"],
@@ -199,7 +199,7 @@ const Profile = (props) => {
                   <div className="mt-1">
                     <Autocomplete
                       className="shadow-sm focus:ring-i-500 focus:border-i-500 block w-full sm:text-sm border-gray-300 rounded-md border-2 py-2 px-4"
-                      apiKey={`AIzaSyApuPpbYSAqBTHTnfB_n7SECRD9V9UYpJA`}
+                      apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}
                       defaultValue={props.raw_billing}
                       options={{
                         types: ["address"],
@@ -382,7 +382,7 @@ const Profile = (props) => {
 
 export async function getServerSideProps(ctx) {
   const { token } = nextCookie(ctx);
-  
+
   // Auth check - redirect if no token
   if (!token) {
     return {

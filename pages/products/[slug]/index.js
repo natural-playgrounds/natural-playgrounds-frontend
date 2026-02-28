@@ -70,11 +70,11 @@ export default function Product({ product }) {
                         )}
                       </Tab>
                     ))}
-                </Tab.List>
-              </div>
+                  </Tab.List>
+                </div>
 
-              <Tab.Panels className="w-full aspect-w-1 aspect-h-1">
-                {product.images.map((image) => (
+                <Tab.Panels className="w-full aspect-w-1 aspect-h-1">
+                  {product.images.map((image) => (
                     <Tab.Panel key={image.id}>
                       <Image
                         src={image.image_url}
@@ -84,8 +84,8 @@ export default function Product({ product }) {
                       />
                     </Tab.Panel>
                   ))}
-              </Tab.Panels>
-            </Tab.Group>
+                </Tab.Panels>
+              </Tab.Group>
             ) : (
               // Fallback when no product.images array
               <div className="w-full aspect-w-1 aspect-h-1 bg-gray-200 rounded-lg overflow-hidden relative">
@@ -159,6 +159,7 @@ export default function Product({ product }) {
                               name: product.name,
                               image: product.image_url || (product.images && product.images.length > 0 && product.images[0].image_url) || null,
                               weight: product.weight,
+                              order_requires_freight: product.order_requires_freight,
                             });
                             updateCartSlide(true);
                           }}
@@ -352,9 +353,14 @@ export async function getStaticProps({ params }) {
     `${process.env.NEXT_PUBLIC_API_URL}/api/products/${params.slug}/?format=json`
   );
 
+  let json_res = await res.json();
+  //console.log(json_res.weight)
+  //console.log(json_res.order_requires_freight)
+
+
   return {
     props: {
-      product: await res.json(),
+      product: json_res,
     },
   };
 }
