@@ -5,7 +5,7 @@ import { useCartSlide } from "../hooks/use-cart-slide.js";
 import { useEffect } from "react";
 export default function Page({ page, results, selected, category }) {
   const { updateTestimonial } = useCartSlide();
-  
+
   useEffect(() => {
     updateTestimonial(page.testimonial);
   }, [page.testimonial, updateTestimonial]);
@@ -34,31 +34,32 @@ export default function Page({ page, results, selected, category }) {
   );
 }
 
-export async function getStaticProps({ params }) {
+export async function getServerSideProps({ params, res }) {
   try {
     const base = process.env.NEXT_PUBLIC_API_URL;
 
-    const res = await fetch(
-      `${base}/api/pages/${params.slug}/?format=json`
-    );
-    const results = await fetch(
-      `${base}/api/search/home/?format=json`
-    );
-    const selected = await fetch(
-      `${base}/api/search/selected/?format=json`
-    );
-    const category = await fetch(
-      `${base}/api/search/category/?format=json`
-    );
+    res.setHeader("Cache-Control", "no-store, max-age=0");
+
+    const pageRes = await fetch(`${base}/api/pages/${params.slug}/?format=json`, {
+      headers: { "Cache-Control": "no-cache" },
+    });
+    const resultsRes = await fetch(`${base}/api/search/home/?format=json`, {
+      headers: { "Cache-Control": "no-cache" },
+    });
+    const selectedRes = await fetch(`${base}/api/search/selected/?format=json`, {
+      headers: { "Cache-Control": "no-cache" },
+    });
+    const categoryRes = await fetch(`${base}/api/search/category/?format=json`, {
+      headers: { "Cache-Control": "no-cache" },
+    });
 
     return {
       props: {
-        page: await res.json(),
-        results: await results.json(),
-        selected: await selected.json(),
-        category: await category.json(),
+        page: await pageRes.json(),
+        results: await resultsRes.json(),
+        selected: await selectedRes.json(),
+        category: await categoryRes.json(),
       },
-      revalidate: 60,
     };
   } catch (e) {
     return {
@@ -75,14 +76,6 @@ export async function getStaticProps({ params }) {
         selected: [],
         category: [],
       },
-      revalidate: 60,
     };
   }
-}
-
-export async function getStaticPaths() {
-  return {
-    paths: [],
-    fallback: 'blocking',
-  };
 }
