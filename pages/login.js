@@ -54,7 +54,7 @@ const Login = () => {
         <h1 className="text-center text-4xl">Please sign in to continue</h1>
         <p className="mt-8">
           <span>Don&#39;t have an <strong>account</strong>,&nbsp;</span>
-          <Link href="/register" className="font-bold">
+          <Link href="/register" className="font-bold no-underline">
             create one here
           </Link>
           <span>.</span>
