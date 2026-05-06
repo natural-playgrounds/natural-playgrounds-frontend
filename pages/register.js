@@ -30,6 +30,7 @@ const Login = () => {
         email: e.currentTarget.email.value,
         first_name: e.currentTarget.first_name.value,
         last_name: e.currentTarget.last_name.value,
+        phone_number: e.currentTarget.phone_number.value,
         password: e.currentTarget.password.value,
         password2: e.currentTarget.password2.value,
       });

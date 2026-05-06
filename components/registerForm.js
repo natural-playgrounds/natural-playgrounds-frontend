@@ -41,6 +41,20 @@ const Form = ({ errorMessage, onSubmit }) => (
         />
       </label>
     </div>
+    <div className="sm:col-span-2">
+      <label>
+        <span>Cell Number</span>
+        <input
+          type="tel"
+          name="phone_number"
+          required
+          className="input"
+          autoComplete="tel"
+          pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
+        />
+        <p className="text-xs">Format ###-###-####</p>
+      </label>
+    </div>
     <div>
       <label>
         <span>Password</span>

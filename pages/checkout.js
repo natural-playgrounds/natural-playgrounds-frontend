@@ -31,7 +31,6 @@ const Checkout = (props) => {
   const [billingShippingSame, setBillingShippingSame] = useState(props.same_as);
   const [userEmail, setUserEmail] = useState(props.email);
   const [firstName, setFirstName] = useState(props.first_name);
-  const [fax, setFax] = useState(props.fax_number);
   const [phone, setPhone] = useState(props.phone_number);
   const [lastName, setLastName] = useState(props.last_name);
   const [billingDirty, setBillingDirty] = useState(false);
@@ -157,7 +156,6 @@ const Checkout = (props) => {
         customer_shipping: shippingAmount,
         same_as: billingShippingSame,
         company: company,
-        fax: fax,
         phone: phone,
         cardToken: paymentToken, // Send secure token from Hosted iFrame Tokenizer
         items: items,
@@ -267,31 +265,10 @@ const Checkout = (props) => {
 
                   <div className="sm:col-span-1">
                     <label
-                      htmlFor="fax"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Fax Number
-                    </label>
-                    <div className="mt-1">
-                      <input
-                        type="tel"
-                        name="fax"
-                        id="fax"
-                        autoComplete="tel"
-                        defaultValue={fax}
-                        onChange={(e) => setFax(e.target.value)}
-                        pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
-                        className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm p-2 border-2"
-                      />
-                      <p className="text-xs">Format ###-###-####</p>
-                    </div>
-                  </div>
-                  <div className="sm:col-span-1">
-                    <label
                       htmlFor="phone"
                       className="block text-sm font-medium text-gray-700"
                     >
-                      Phone
+                      Cell Number
                     </label>
                     <div className="mt-1">
                       <input
@@ -305,7 +282,7 @@ const Checkout = (props) => {
                         pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
                         className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm p-2 border-2"
                       />
-                      <p className="text-xs">Format ###-###-####</p>
+                      <div className="text-xs">Format ###-###-####</div>
                     </div>
                   </div>
                 </div>
