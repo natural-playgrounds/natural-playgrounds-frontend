@@ -11,7 +11,7 @@ const Login = () => {
       var environment =
         process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
       const res = await axios.post(`${environment}/api/forgot/`, {
-        email: email,
+        from_email: email,
       });
       if (res.status === 200) {
         toast.success(
