@@ -1,8 +1,7 @@
-import React, { useState, useEffect, Fragment } from "react";
+import React, { useState, Fragment } from "react";
 import { Switch } from "@headlessui/react";
-import Router from "next/router";
 import nextCookie from "next-cookies";
-import { withAuthSync } from "../lib/auth";
+import { logout, withAuthSync } from "../lib/auth";
 import axios from "axios";
 import Image from "next/image";
 import Autocomplete from "react-google-autocomplete";
@@ -60,12 +59,23 @@ const Profile = (props) => {
       <div className="wide-load">
         <div className="flex flex-col">
           <div className="px-4 sm:px-0">
-            <h1 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
-              Contact Information
-            </h1>
-            <p className="mt-2 text-sm text-gray-500">
-              Update your contact information.
-            </p>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
+                  Contact Information
+                </h1>
+                <p className="mt-2 text-sm text-gray-500">
+                  Update your contact information.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={logout}
+                className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+              >
+                Log out
+              </button>
+            </div>
           </div>
           <div className="pt-4">
             <form
