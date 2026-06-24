@@ -56,7 +56,7 @@ const Login = () => {
           <div className="flex flex-row justify-between w-full items-center space-x-0 md:space-x-4">
             <>
               <button type="submit" className="button w-1/2">
-                Send reset link
+                Send Reset Link
               </button>
             </>
           </div>
