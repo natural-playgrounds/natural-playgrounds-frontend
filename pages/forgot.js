@@ -31,15 +31,16 @@ const Login = () => {
   return (
     <div className="login wide-load py-12 lg:py-16 flex flex-col space-y-12">
       <div className="w-full">
-        <h1 className="text-center text-4xl">
-          Enter your information below To reset your password
-        </h1>
+        <h2 className="text-center text-4xl">
+          Enter the email address associated with your account and we will send you a link to reset your password.
+        </h2>
+
       </div>
       <div className="w-full max-w-2xl mx-auto">
         <form onSubmit={handleSubmit} className="mt-4 flex flex-col space-y-4">
           <div>
             <label>
-              <span>Email Name</span>
+              <span>Email Address</span>
               <input
                 type="email"
                 name="email"
@@ -55,7 +56,7 @@ const Login = () => {
           <div className="flex flex-row justify-between w-full items-center space-x-0 md:space-x-4">
             <>
               <button type="submit" className="button w-1/2">
-                Forgot Password
+                Send reset link
               </button>
             </>
           </div>
