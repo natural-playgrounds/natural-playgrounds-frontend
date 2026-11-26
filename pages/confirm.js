@@ -9,6 +9,14 @@ const Login = () => {
 
   async function handleSubmit(e) {
     e.preventDefault();
+    if (password !== e.currentTarget.elements.password2.value) {
+      toast.error("Passwords do not match.");
+      return;
+    }
+    if (typeof router.query.token !== "string" || !router.query.token) {
+      toast.error("Invalid reset link. Please request a new password reset.");
+      return;
+    }
     try {
       var environment =
         process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -23,7 +31,8 @@ const Login = () => {
         toast.error("Issue resetting your password.", { duration: 3000 });
       }
     } catch (error) {
-      toast.error("Issue resetting your password.", { duration: 3000 });
+      const errors = error.response?.data?.password;
+      toast.error(Array.isArray(errors) && errors.length ? errors.join(" ") : "Unable to reset your password. The link may have expired. Please request a new reset link.", { duration: 6000 });
     }
   }
 
@@ -63,7 +72,7 @@ const Login = () => {
           <div className="flex flex-row justify-between w-full items-center space-x-0 md:space-x-4">
             <>
               <button type="submit" className="button w-1/2">
-                New Password
+                Reset Password
               </button>
             </>
           </div>
