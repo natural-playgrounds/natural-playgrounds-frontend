@@ -136,10 +136,6 @@ const Checkout = (props) => {
     try {
       e.preventDefault();
 
-      if (!paymentToken) {
-        toast.error("Please enter your payment information");
-        return;
-      }
 
       setIsSubmitting(true);
       const environment =
@@ -154,25 +150,23 @@ const Checkout = (props) => {
         email: userEmail,
         billing: billing,
         shipping: shipping,
-        customer_shipping: shippingAmount,
         same_as: billingShippingSame,
         company: company,
         phone: phone,
-        cardToken: paymentToken, // Send secure token from Hosted iFrame Tokenizer
         items: items,
       });
 
       if (res.status === 201) {
         const data = await res.data;
 
-        // CardPointe authorization successful
+        // Order saved successfully
         if (data.success) {
           emptyCart();
-          toast.success(`Order authorized successfully! Order #${data.orderNumber}`);
+          toast.success(`Order saved successfully! Order #${data.orderNumber}`);
           Router.push(`/purchase/${data.saleId}`);
         } else {
-          // Handle authorization failure
-          toast.error(data.error || "Payment authorization failed");
+          // Handle order save failure
+          toast.error(data.error || "Unable to save order");
           setIsSubmitting(false);
         }
       }
@@ -537,79 +531,8 @@ const Checkout = (props) => {
               </div>
 
               <div className="pt-10">
-                <h2 className="text-lg font-medium text-gray-900">Payment Information</h2>
-
-
-                {/* Hosted iFrame Tokenizer for secure payment processing */}
-                <div className="mt-6">
-                  <iframe
-                    id="tokenFrame"
-                    name="tokenFrame"
-                    src={`https://fts-uat.cardconnect.com/itoke/ajax-tokenizer.html?useexpiry=true&usecvv=true&formatinput=true&tokenizewheninactive=true&inactivityto=2000&cardlabel=Card%20Number&expirylabel=Expiration&cvvlabel=CVV&css=${encodeURIComponent('input{width:90%;padding:12px;border:2px solid #e1e5e9;border-radius:8px;font-size:16px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;transition:border-color 0.2s ease;}select,#cccvvfield{width:100px;padding:12px;border:2px solid #e1e5e9;border-radius:8px;font-size:16px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;transition:border-color 0.2s ease;}#ccnumfield{font-size:.875rem;line-height:1.25rem;}input:focus,select:focus,#cccvvfield:focus{border-color:#10b981;outline:none;box-shadow:0 0 0 3px rgba(16,185,129,0.1);}label{font-weight:600;color:#374151;margin:0px;display:block;}.error{border-color:#dc3545;background-color:#fef2f2;}')}`}
-                    frameBorder="0"
-                    scrolling="no"
-                    style={{
-                      width: '100%',
-                      height: '300px',
-                      border: '2px solid #e1e5e9',
-                      borderRadius: '8px',
-                      backgroundColor: '#ffffff'
-                    }}
-                  />
-
-                  {/* Token status indicator */}
-                  <div className="mt-3">
-                    {isTokenReady ? (
-                      <div className="flex items-center text-green-600">
-                        <svg className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                        </svg>
-                        <span className="text-sm font-medium">Payment information secured</span>
-                      </div>
-                    ) : tokenError ? (
-                      <div className="flex items-center text-red-600">
-                        <svg className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                        </svg>
-                        <span className="text-sm">{tokenError}</span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center text-gray-500">
-                        <svg className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                        </svg>
-                        <span className="text-sm">Enter payment details above</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="mt-6 bg-green-50 border border-green-200 rounded-lg p-4">
-                  <div className="flex">
-                    <div className="flex-shrink-0">
-                      <svg className="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <div className="ml-3">
-                      <h3 className="text-sm font-medium text-green-800">
-                        Secure Payment Processing
-                      </h3>
-                      <div className="mt-2 text-sm text-green-700">
-                        <p>
-                          Your payment information is processed securely and never stored on our servers.
-                          This form uses bank-level encryption and is PCI DSS compliant.
-                        </p>
-                        <ul className="mt-2 list-disc list-inside">
-                          <li>Payment data goes directly to secure CardPointe servers</li>
-                          <li>256-bit SSL encryption</li>
-                          <li>Your card will be authorized now, charged when ready to ship</li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
+                <h2 className="text-lg font-medium text-gray-900">Save Your Order</h2>
+                <p className="mt-2 text-sm text-gray-600">No payment information is required. We will review your order and shipping costs before arranging payment.</p>
                 <div className="border-t border-gray-200 py-6">
                   {items.length <= 0 ? (
                     <p className="text-white bg-red-600 p-4 border-left-4 border-red-800">
@@ -619,10 +542,9 @@ const Checkout = (props) => {
                     <>
                       {items.length > 0 &&
                         !shippingDirty &&
-                        !billingDirty &&
-                        isTokenReady ? (
-                        <button type="submit" className="w-full button">
-                          Place Order
+                        !billingDirty ? (
+                        <button type="submit" disabled={isSubmitting} className="w-full button">
+                          Save Order
                         </button>
                       ) : null}
                     </>
