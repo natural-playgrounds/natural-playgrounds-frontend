@@ -56,7 +56,9 @@ const Checkout = (props) => {
   // Listen for payment token from Hosted iFrame Tokenizer
   useEffect(() => {
     const handleTokenMessage = (event) => {
-      // Only process messages that look like JSON and are from CardPointe
+      const frame = document.getElementById('tokenFrame');
+      if (!frame || event.source !== frame.contentWindow || event.origin !== new URL(frame.src).origin) return;
+      // Only process messages from the configured CardPointe iframe
       if (typeof event.data !== 'string' || !event.data.startsWith('{')) {
         return; // Ignore non-JSON messages
       }
@@ -74,12 +76,12 @@ const Checkout = (props) => {
           setPaymentToken(tokenData.message);
           setIsTokenReady(true);
           setTokenError('');
-          console.log('Payment token received:', tokenData.message);
         }
 
         // Validation errors
         if (tokenData.validationError) {
           setTokenError(`Payment validation error: ${tokenData.validationError}`);
+          setPaymentToken('');
           setIsTokenReady(false);
         }
 
@@ -144,7 +146,6 @@ const Checkout = (props) => {
         process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
       console.log('Submitting checkout with shipping:', shipping);
       console.log('Submitting checkout with billing:', billing);
-      console.log('Using secure payment token:', paymentToken.substring(0, 10) + '...');
 
       const res = await axios.post(`${environment}/api/checkout/`, {
         token: props.token,
@@ -537,9 +538,7 @@ const Checkout = (props) => {
 
               <div className="pt-10">
                 <h2 className="text-lg font-medium text-gray-900">Payment Information</h2>
-                <div className="mt-2 text-xs text-gray-500">
-                  debug paymentToken: {paymentToken || '—'}
-                </div>
+
 
                 {/* Hosted iFrame Tokenizer for secure payment processing */}
                 <div className="mt-6">
