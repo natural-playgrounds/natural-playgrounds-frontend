@@ -43,15 +43,17 @@ const Form = ({ errorMessage, onSubmit }) => (
     </div>
     <div className="sm:col-span-2">
       <label>
-        <span>Phone Number</span>
+        <span>Mobile Phone Number</span>
         <input
           type="tel"
           name="phone_number"
           required
           className="input"
           autoComplete="tel"
+          aria-describedby="mobile-phone-help"
         />
       </label>
+      <p id="mobile-phone-help" className="text-sm">Required for coordinating freight deliveries.</p>
     </div>
     <div>
       <label>
