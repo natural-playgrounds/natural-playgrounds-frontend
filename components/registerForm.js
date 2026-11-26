@@ -43,16 +43,14 @@ const Form = ({ errorMessage, onSubmit }) => (
     </div>
     <div className="sm:col-span-2">
       <label>
-        <span>Cell Number</span>
+        <span>Phone Number</span>
         <input
           type="tel"
           name="phone_number"
           required
           className="input"
           autoComplete="tel"
-          pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
         />
-        <p className="text-xs">Format ###-###-####</p>
       </label>
     </div>
     <div>
@@ -82,7 +80,7 @@ const Form = ({ errorMessage, onSubmit }) => (
     <div className="flex flex-row justify-between w-full items-center space-x-0 md:space-x-4">
       <>
         <button type="submit" className="button w-1/3">
-          Signup
+          Create Account
         </button>
         <Link href="/login/" className="w-1/2">
           Login to existing account?
