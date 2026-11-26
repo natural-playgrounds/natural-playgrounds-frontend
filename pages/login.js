@@ -44,6 +44,8 @@ const Login = () => {
         error.response.data.non_field_errors
       ) {
         setErrorMsg(error.response.data.non_field_errors[0]);
+      } else {
+        setErrorMsg("Unable to sign in. Please try again.");
       }
     }
   }
