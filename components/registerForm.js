@@ -53,7 +53,7 @@ const Form = ({ errorMessage, onSubmit }) => (
           aria-describedby="mobile-phone-help"
         />
       </label>
-      <p id="mobile-phone-help" className="text-sm">Required for coordinating freight deliveries.</p>
+      <p id="mobile-phone-help" className="text-sm">Used to coordinate freight deliveries. If you do not have a mobile number, please enter a landline.</p>
     </div>
     <div>
       <label>
