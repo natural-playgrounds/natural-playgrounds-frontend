@@ -14,7 +14,8 @@ export default function ProductIndex({ results, category, topSeller }) {
   );
 }
 
-export async function getStaticProps({ params }) {
+export async function getServerSideProps({ res }) {
+  res.setHeader('Cache-Control', 'no-store');
   const results = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/api/search/?format=json`
   );
@@ -24,6 +25,10 @@ export async function getStaticProps({ params }) {
   const topSeller = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/api/search/selected/?format=json`
   );
+
+  if (![results, category, topSeller].every(response => response.ok)) {
+    throw new Error('Unable to load current product catalog');
+  }
 
   return {
     props: {
