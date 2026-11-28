@@ -213,7 +213,7 @@ export default function Search({ results, category, topSeller }) {
                         />
                       ) : null}
                     </div>
-                    <div className="mt-1 h-10 flex items-start justify-center text-sm text-center font-normal text-gray-600 overflow-hidden"><span className="line-clamp-2">{product.image_caption || ""}</span></div>
+                    <div className="mt-1 h-5 flex items-start justify-center text-sm text-center font-normal text-gray-600 overflow-hidden"><span className="line-clamp-1">{product.image_caption || ""}</span></div>
                     <h3 className="mt-0 mb-2 text-base font-bold text-gray-800 text-center flex-1">
                       {product.name}
                     </h3>
