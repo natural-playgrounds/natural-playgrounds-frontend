@@ -152,7 +152,7 @@ export default function Search({ results, category, topSeller }) {
                   <div className="grid grid-cols-1 gap-7">
                     {selling.map((seller, sellerIdx) => (
                       <div className="grid grid-cols-3 gap-7" key={sellerIdx}>
-                        <div className="col-span-1">
+                        <Link href={seller.link} className="col-span-1">
                           <div className="w-full aspect-w-1 aspect-h-1 bg-gray-200 rounded-lg overflow-hidden xl:aspect-w-7 xl:aspect-h-8 relative">
                             {seller.image_url || (seller.images && seller.images.length > 0 && seller.images[0].image_url) ? (
                               <Image
@@ -165,7 +165,7 @@ export default function Search({ results, category, topSeller }) {
                               <div className="w-full h-full object-center object-cover sm:w-full sm:h-full"></div>
                             )}
                           </div>
-                        </div>
+                        </Link>
                         <div className="col-span-2  flex flex-col h-full justify-between">
                           <Link
                             key={sellerIdx}
@@ -185,12 +185,12 @@ export default function Search({ results, category, topSeller }) {
                             />
                           )}
                           <div className="flex-1 flex items-end">
-                            <button
-                              type="button"
+                            <Link
+                              href={seller.link}
                               className="max-w-xs flex-1 bg-green-600 border border-transparent rounded-md py-3 px-8 flex items-center justify-center text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-50 focus:ring-green-500 sm:w-full"
                             >
-                              Add to Cart
-                            </button>
+                              View Product
+                            </Link>
                           </div>
                         </div>
                       </div>
