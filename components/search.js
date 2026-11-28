@@ -213,8 +213,8 @@ export default function Search({ results, category, topSeller }) {
                         />
                       ) : null}
                     </div>
-                    {product.image_caption && <p className="mt-1 text-sm text-center font-normal text-gray-600">{product.image_caption}</p>}
-                    <h3 className="mt-4 mb-3 text-base font-bold text-gray-800 text-center flex-1">
+                    <div className="mt-1 h-10 flex items-start justify-center text-sm text-center font-normal text-gray-600 overflow-hidden"><span className="line-clamp-2">{product.image_caption || ""}</span></div>
+                    <h3 className="mt-0 mb-2 text-base font-bold text-gray-800 text-center flex-1">
                       {product.name}
                     </h3>
                     <span className="block w-full rounded-md bg-dark-green text-white text-center font-medium py-3 px-4">
