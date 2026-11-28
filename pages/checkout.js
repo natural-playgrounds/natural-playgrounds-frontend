@@ -236,7 +236,7 @@ const Checkout = (props) => {
                       htmlFor="phone"
                       className="block text-sm font-medium text-gray-700"
                     >
-                      Phone Number
+                      Phone Number (Mobile Preferred)
                     </label>
                     <div className="mt-1">
                       <input
@@ -249,7 +249,7 @@ const Checkout = (props) => {
                         autoComplete="tel"
                         className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm p-2 border-2"
                       />
-                      <div className="text-xs">Mobile preferred; landline accepted.</div>
+
                     </div>
                   </div>
                 </div>
