@@ -182,14 +182,7 @@ export async function getServerSideProps(ctx) {
     const response = await axios.get(apiUrl, {headers: {Authorization: `Token ${token}`}});
     if (response.status == 201) {
       const data = await response.data;
-      const unique = [...new Map(data.products.map(p => [p.href,p])).values()];
-      const instructions = await Promise.all(unique.map(async p => {
-        try {
-          const slug = p.href.split("/").filter(Boolean).pop();
-          const {data: product} = await axios.get(`${environment}/api/products/${encodeURIComponent(slug)}/?format=json`, {timeout:10000});
-          return {href:p.href,name:p.name,instructions:product.instructions || ""};
-        } catch { return {href:p.href,name:p.name,instructions:""}; }
-      }));
+      const instructions = [...new Map(data.products.map(p => [p.instruction_key || p.href, {href:p.instruction_key || p.href, name:p.instruction_key?.startsWith("option-") ? [p.name,p.option].filter(Boolean).join(" — ") : p.name, instructions:p.instructions || ""}])).values()];
       return {
         props: { ...data, token, instructions },
       };
