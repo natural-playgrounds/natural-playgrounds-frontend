@@ -197,14 +197,14 @@ export default function Cart() {
                     <div className="mt-6 flex justify-center text-sm text-center text-gray-500">
                       <p>
                         or{" "}
-                        <button
-                          type="button"
+                        <Link
+                          href="/products/"
                           className="text-green-600 font-medium hover:text-green-500"
                           onClick={() => updateCartSlide(false)}
                         >
                           Continue Shopping
                           <span aria-hidden="true"> &rarr;</span>
-                        </button>
+                        </Link>
                       </p>
                     </div>
                   </div>
