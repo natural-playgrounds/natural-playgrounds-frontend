@@ -78,7 +78,7 @@ const Checkout = (props) => {
     if (!items.length) return;
     axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/calculate-shipping/`, {items})
       .then(({data}) => { if (active) setQuote({...data, key: cartKey}); })
-      .catch(() => { if (active) setQuoteError(true); });
+      .catch(error => { if (active) setQuoteError([error.response?.status, error.response?.data?.error, error.response?.data?.diagnostic].filter(Boolean).join(" — ") || "Network error"); });
     return () => { active = false; };
   }, [cartKey]);
 
@@ -482,7 +482,7 @@ const Checkout = (props) => {
                       <div className="flex items-center justify-between">
                         <dt className="text-sm">Subtotal</dt>
                         <dd className="text-sm font-medium text-gray-900">
-                          {currentQuote ? `${currentQuote.orderTotal.toFixed(2)}` : `${cartTotal.toFixed(2)}`}
+                          {currentQuote ? `$${currentQuote.orderTotal.toFixed(2)}` : `$${cartTotal.toFixed(2)}`}
                         </dd>
                       </div>
                       <div className="flex items-center justify-between">
@@ -494,13 +494,13 @@ const Checkout = (props) => {
                           </div>
                         </dt>
                         <dd className="text-sm font-medium text-gray-900">
-                          {currentQuote ? `${currentQuote.shippingCost.toFixed(2)}` : quoteError ? "Unavailable" : "Calculating…"}
+                          {currentQuote ? `$${currentQuote.shippingCost.toFixed(2)}` : quoteError ? quoteError : "Calculating…"}
                         </dd>
                       </div>
                       <div className="flex items-center justify-between border-t border-gray-200 pt-6">
                         <dt className="text-base font-medium">Total</dt>
                         <dd className="text-base font-medium text-gray-900">
-                          {currentQuote ? `${currentQuote.totalWithShipping.toFixed(2)}` : "Pending shipping"}
+                          {currentQuote ? `$${currentQuote.totalWithShipping.toFixed(2)}` : "Pending shipping"}
                         </dd>
                       </div>
                     </dl>
