@@ -19,10 +19,11 @@ export default function Profile() {
   }
 
   async function handleSubmit(e) {
+    e.preventDefault();
+    if (!captcha || isSubmitting) return;
     try {
       if (captcha) {
         setIsSubmitting(true);
-        e.preventDefault();
         const environment =
           process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
         const res = await axios.post(`${environment}/api/contact/`, {
@@ -39,10 +40,10 @@ export default function Profile() {
         } else {
           throw new Error(await res.data);
         }
-        isSubmitting(false);
+
       }
     } catch (error) {
-      toast.error(`An unexpected error happened occurred: ${error}`, { duration: 3000 });
+      toast.error("Unable to send your message. Please try again.", { duration: 3000 });
       if (
         error.response &&
         error.response.data &&
@@ -50,6 +51,8 @@ export default function Profile() {
       ) {
         setErrorMsg(error.response.data.non_field_errors[0]);
       }
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -76,7 +79,7 @@ export default function Profile() {
               >
                 <div className="sm:col-span-3">
                   <label
-                    htmlFor="first-name"
+                    htmlFor="name"
                     className="block text-sm font-medium text-gray-700"
                   >
                     Name
@@ -123,6 +126,7 @@ export default function Profile() {
                   <div className="mt-1">
                     <textarea
                       className="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-300 rounded-md border-2 py-2 px-4"
+                      id="message"
                       rows="8"
                       onChange={(e) => setMessage(e.target.value)}
                       required={true}
@@ -136,13 +140,16 @@ export default function Profile() {
 
                 <div className="w-full sm:col-span-6">
                   {captcha ? (
-                    <button type="submit" className="button w-32">
-                      Contact Us
+                    <button type="submit" className="rounded-md bg-dark-green text-white font-semibold px-6 py-3">
+                      Send Message
                     </button>
                   ) : (
-                    <button disabled className="button-empty w-32">
-                      Contact Us
-                    </button>
+                    <div>
+                      <button type="submit" disabled className="rounded-md bg-dark-green text-white font-semibold px-6 py-3 opacity-60">
+                        Send Message
+                      </button>
+                      <p className="mt-2 text-sm text-gray-700">Complete the verification above to send your message.</p>
+                    </div>
                   )}
                 </div>
               </form>
