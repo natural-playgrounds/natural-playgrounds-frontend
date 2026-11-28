@@ -13,6 +13,27 @@ import Link from "next/link";
 import GoogleAutocomplete from "../components/GoogleAutocomplete";
 import toast from "react-hot-toast";
 
+function CartPhoto({ product, open }) {
+  const [src, setSrc] = useState(product.image || null);
+  useEffect(() => {
+    if (!open || !product.slug) return;
+    let active = true;
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products/${encodeURIComponent(product.slug)}/?format=json`, { cache: "no-store" })
+      .then(response => {
+        if (!response.ok) throw new Error("Image unavailable");
+        return response.json();
+      })
+      .then(data => {
+        if (active) setSrc(data.image_url || data.images?.[0]?.image_url || null);
+      })
+      .catch(() => {});
+    return () => { active = false; };
+  }, [open, product.slug]);
+  return src ? (
+    <Image src={src} alt={product.name} fill className="object-contain" onError={() => setSrc(null)} />
+  ) : <span className="absolute inset-0 flex items-center justify-center text-xs text-gray-500 text-center">Image unavailable</span>;
+}
+
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
@@ -390,14 +411,7 @@ const Checkout = (props) => {
                       {items.map((item) => (
                         <li key={item.id} className="flex py-6 px-4 sm:px-6">
                           <div className="flex-shrink-0 h-32 w-32 relative">
-                            {item.image && (
-                              <Image
-                                src={item.image}
-                                alt={`Product Image of ${item.name}`}
-                                className="object-center object-cover"
-                                fill
-                              />
-                            )}
+                            <CartPhoto product={item} open={true} />
                           </div>
 
                           <div className="ml-6 flex-1 flex flex-col">
