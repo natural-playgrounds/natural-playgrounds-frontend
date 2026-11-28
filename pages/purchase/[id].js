@@ -7,6 +7,7 @@ import axios from "axios";
 import { jsPDF } from "jspdf";
 const Purchase = (props) => {
   const money = value => Number(value || 0).toLocaleString("en-US", {style:"currency",currency:"USD"});
+  const statusText = props.payment_status === "COMPLETED" ? "Payment received." : props.payment_status === "PENDING" ? "Payment pending." : `Payment status: ${props.payment_status || "Unknown"}`;
   const downloadOrder = () => {
     const doc = new jsPDF();
     let y = 20;
@@ -20,7 +21,7 @@ const Purchase = (props) => {
     };
     line("Natural Playgrounds", 19);
     line("Saved Order #" + props.sale_number, 15);
-    line("Pending review. Payment has not been processed.");
+    line(statusText);
     y += 5;
     line("Shipping address: " + props.shipping);
     line("Billing address: " + props.billing);
@@ -47,11 +48,12 @@ const Purchase = (props) => {
             Thank you!
           </h1>
           <p className="mt-2 text-4xl font-extrabold tracking-tight sm:text-5xl">
-            Your order has been saved.
+            Order #{props.sale_number}
           </p>
           <p className="mt-2 text-base text-gray-500">
-            Your order #{props.sale_number} is pending review. Payment has not been processed.
+            Order #{props.sale_number}. {statusText}
           </p>
+          <a href="/account" className="block mt-4 underline">Back to Order History</a>
           <button type="button" onClick={downloadOrder} className="mt-6 rounded bg-green-800 px-5 py-3 font-semibold text-white">Download Order PDF</button>
         </div>
 
@@ -88,12 +90,12 @@ const Purchase = (props) => {
                 className="py-10 border-b border-gray-200 flex space-x-6"
               >
                 <div className="h-20 w-20 rounded-lg sm:w-40 sm:h-40 bg-gray-100 relative">
-                  <Image
+                  {product.image && <Image
                     src={product.image}
                     alt={`Product image for ${product.name}`}
                     className="object-center object-cover"
                     fill
-                  />
+                  />}
                 </div>
                 <div className="flex-auto flex flex-col">
                   <div>
@@ -169,7 +171,7 @@ export async function getServerSideProps(ctx) {
   const apiUrl = `${environment}/api/purchase/${ctx.query.id}/`;
 
   try {
-    const response = await axios.get(apiUrl);
+    const response = await axios.get(apiUrl, {headers: {Authorization: `Token ${token}`}});
     if (response.status == 201) {
       const data = await response.data;
 
