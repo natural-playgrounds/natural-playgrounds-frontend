@@ -214,7 +214,7 @@ export default function WidgetChooser({ obj, results, category }) {
           <div className="flex flex-col services py-8 items-center">
             <div className="wide-load">
               <div className="w-full justify-center flex flex-col items-center">
-                <Title title={obj.title} />
+                <Title title="Explore Our Products & Services" />
               </div>
             </div>
             <div className="wide-load w-full pt-8">
@@ -238,7 +238,7 @@ export default function WidgetChooser({ obj, results, category }) {
                         height={50}
                         alt="Manufacturing Image"
                       />
-                      <h3 className="mt-4">Manufacturing</h3>
+                      <span className="mt-4 inline-flex items-center justify-center rounded-md bg-dark-green px-4 py-3 text-white font-semibold text-center no-underline w-full">Manufacturing</span>
                     </Link>
                   </div>
                   <div>
@@ -249,7 +249,7 @@ export default function WidgetChooser({ obj, results, category }) {
                         height={50}
                         alt="Design Image"
                       />
-                      <h3 className="mt-4">Design</h3>
+                      <span className="mt-4 inline-flex items-center justify-center rounded-md bg-dark-green px-4 py-3 text-white font-semibold text-center no-underline w-full">Design Services</span>
                     </Link>
                   </div>
                 </div>
@@ -438,11 +438,11 @@ export default function WidgetChooser({ obj, results, category }) {
                   <Link href="/about" className="cursor-pointer no-underline">
                     <Title title={obj.title} added_class="learn-more " />
                   </Link>
-                  <Link href="/about" className="cursor-pointer">
-                    Our Company
+                  <Link href="/about" className="inline-flex items-center justify-center rounded-md bg-dark-green px-4 py-3 text-white font-semibold text-center no-underline w-full">
+                    About Our Company
                   </Link>
-                  <Link href="/faq" className="cursor-pointer">
-                    Everything else about Natural Playgrounds
+                  <Link href="/faq" className="inline-flex items-center justify-center rounded-md bg-dark-green px-4 py-3 text-white font-semibold text-center no-underline w-full">
+                    Learn About Natural Playgrounds
                   </Link>
                 </div>
                 <div className="w-full md:w-1/3 flex justify-center">
