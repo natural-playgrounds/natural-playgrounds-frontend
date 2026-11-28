@@ -34,6 +34,12 @@ function CartPhoto({ product, open }) {
   ) : <span className="absolute inset-0 flex items-center justify-center text-xs text-gray-500 text-center">Image unavailable</span>;
 }
 
+function postalCode(address) {
+  if (typeof address === "string") {
+    return address.match(/\b\d{5}(?:-\d{4})?\b(?=\s*(?:,?\s*(?:USA|US|United States))?\s*$)/i)?.[0] || address.match(/\b[A-Z]\d[A-Z]\s?\d[A-Z]\d\b/i)?.[0] || "";
+  }
+  return address?.address_components?.find(c => c.types.includes("postal_code"))?.long_name || "";
+}
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
@@ -57,6 +63,8 @@ const Checkout = (props) => {
   const [billingDirty, setBillingDirty] = useState(false);
   const [shippingDirty, setShippingDirty] = useState(false);
   const [hasMounted, setHasMounted] = useState(false);
+  const shippingZip = shippingDirty ? "" : postalCode(shipping);
+  const billingZip = billingShippingSame ? shippingZip : billingDirty ? "" : postalCode(billing);
 
   // CardPointe Hosted iFrame Tokenizer state
   const [paymentToken, setPaymentToken] = useState('');
@@ -130,6 +138,7 @@ const Checkout = (props) => {
     try {
       e.preventDefault();
       if (!currentQuote || isSubmitting) return;
+      if (!shippingZip || !billingZip) { toast.error("Please select complete shipping and billing addresses with ZIP or postal codes."); return; }
 
 
       setIsSubmitting(true);
@@ -307,6 +316,7 @@ const Checkout = (props) => {
                           componentRestrictions: { country: ["us", "ca"] },
                         }}
                       />
+                      <p className="mt-2 text-sm font-medium">Shipping ZIP / Postal Code: {shippingZip || "Required — select a complete address"}</p>
                       {shippingDirty && (
                         <p className="text-red-500 text-xs italic">
                           Please select a valid address
@@ -359,6 +369,7 @@ const Checkout = (props) => {
                       </Switch.Group>
                     </div>
                   </div>
+                  {billingShippingSame && <p className="sm:col-span-6 text-sm font-medium">Billing ZIP / Postal Code: {billingZip || "Required"}</p>}
                   {!billingShippingSame && (
                     <div className="sm:col-span-6">
                       <label
@@ -385,6 +396,7 @@ const Checkout = (props) => {
                             componentRestrictions: { country: ["us", "ca"] },
                           }}
                         />
+                        <p className="mt-2 text-sm font-medium">Billing ZIP / Postal Code: {billingZip || "Required — select a complete address"}</p>
                         {billingDirty && (
                           <p className="text-red-500 text-xs italic">
                             Please select a valid address
@@ -525,8 +537,8 @@ const Checkout = (props) => {
                     <>
                       {items.length > 0 &&
                         !shippingDirty &&
-                        !billingDirty ? (
-                        <button type="submit" disabled={isSubmitting || !currentQuote} className="w-full button disabled:opacity-50">
+                        (billingShippingSame || !billingDirty) ? (
+                        <button type="submit" disabled={isSubmitting || !currentQuote || !shippingZip || !billingZip} className="w-full button disabled:opacity-50">
                           Save Order
                         </button>
                       ) : null}
