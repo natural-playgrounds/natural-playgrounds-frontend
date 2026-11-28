@@ -158,7 +158,7 @@ export default function Search({ results, category, topSeller }) {
                               <Image
                                 src={seller.image_url || seller.images[0].image_url}
                                 alt={`Image for ${seller.name}`}
-                                className="w-full h-full object-center object-cover group-hover:opacity-75"
+                                className="w-full h-full object-center object-contain group-hover:opacity-90"
                                 fill
                               />
                             ) : (
@@ -187,7 +187,7 @@ export default function Search({ results, category, topSeller }) {
                           <div className="flex-1 flex items-end">
                             <Link
                               href={seller.link}
-                              className="max-w-xs flex-1 bg-green-600 border border-transparent rounded-md py-3 px-8 flex items-center justify-center text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-50 focus:ring-green-500 sm:w-full"
+                              className="max-w-xs flex-1 bg-dark-green border border-transparent rounded-md py-3 px-8 flex items-center justify-center text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-50 focus:ring-green-500 sm:w-full"
                             >
                               View Product
                             </Link>
@@ -199,24 +199,25 @@ export default function Search({ results, category, topSeller }) {
                 </div>
               )}
 
-              <div className="grid grid-cols-1 gap-y-4 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-10 lg:gap-x-8 xl:grid-cols-3">
+              <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 xl:grid-cols-3">
                 {localResults.map((product, productIdx) => (
-                  <Link key={productIdx} href={product.link} className="group">
-                    <div className="w-full aspect-w-1 aspect-h-1 bg-gray-200 rounded-lg overflow-hidden xl:aspect-w-7 xl:aspect-h-8 relative">
+                  <Link key={productIdx} href={product.link} className="group flex flex-col h-full no-underline">
+                    <div className="relative w-full aspect-[4/3] bg-white rounded-lg overflow-hidden">
                       {product.image_url || (product.images && product.images.length > 0 && product.images[0].image_url) ? (
                         <Image
                           src={product.image_url || product.images[0].image_url}
-                          alt={`Product Image for ${product.name}`}
-                          className="w-full h-full object-center object-cover group-hover:opacity-75"
+                          alt={product.name}
+                          className="object-contain group-hover:opacity-90"
                           fill
                         />
-                      ) : (
-                        <div className="w-full h-full object-center object-cover sm:w-full sm:h-full"></div>
-                      )}
+                      ) : null}
                     </div>
-                    <h3 className="mt-4 text-sm text-gray-700">
+                    <h3 className="mt-4 mb-3 text-base font-bold text-gray-800 text-center flex-1">
                       {product.name}
                     </h3>
+                    <span className="block w-full rounded-md bg-dark-green text-white text-center font-medium py-3 px-4">
+                      View Product
+                    </span>
                   </Link>
                 ))}
               </div>
