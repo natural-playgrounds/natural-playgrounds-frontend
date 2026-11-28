@@ -1,4 +1,4 @@
-import { Fragment, useState } from "react";
+import { Fragment, useState, useEffect } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { XIcon } from "@heroicons/react/outline";
 import { useCartSlide } from "../hooks/use-cart-slide.js";
@@ -6,6 +6,26 @@ import { useCart } from "react-use-cart";
 import Image from "next/image";
 import Link from "next/link";
 import { ShoppingCartIcon } from "@heroicons/react/outline";
+function CartPhoto({ product, open }) {
+  const [src, setSrc] = useState(product.image || null);
+  useEffect(() => {
+    if (!open || !product.slug) return;
+    let active = true;
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products/${encodeURIComponent(product.slug)}/?format=json`, { cache: "no-store" })
+      .then(response => {
+        if (!response.ok) throw new Error("Image unavailable");
+        return response.json();
+      })
+      .then(data => {
+        if (active) setSrc(data.image_url || data.images?.[0]?.image_url || null);
+      })
+      .catch(() => {});
+    return () => { active = false; };
+  }, [open, product.slug]);
+  return src ? (
+    <Image src={src} alt={product.name} fill className="object-contain" onError={() => setSrc(null)} />
+  ) : <span className="absolute inset-0 flex items-center justify-center text-xs text-gray-500 text-center">Image unavailable</span>;
+}
 export default function Cart() {
   const { cartSlide, updateCartSlide } = useCartSlide();
   const { cartTotal, items, removeItem, updateItemQuantity } = useCart();
@@ -68,14 +88,7 @@ export default function Cart() {
                             items.map((product) => (
                               <li key={product.id} className="py-6 flex">
                                 <div className="flex-shrink-0 w-24 h-24 border border-gray-200 rounded-md overflow-hidden relative">
-                                  {product.image && (
-                                    <Image
-                                      src={product.image}
-                                      alt={`Product Image of ${product.name}`}
-                                      fill
-                                      className="w-full h-full object-center object-cover"
-                                    />
-                                  )}
+                                  <CartPhoto product={product} open={cartSlide} />
                                 </div>
 
                                 <div className="ml-4 flex-1 flex flex-col">
