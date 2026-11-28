@@ -348,36 +348,12 @@ export default function Product({ product }) {
   );
 }
 
-export async function getStaticProps({ params }) {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/products/${params.slug}/?format=json`
+export async function getServerSideProps({ params, res }) {
+  res.setHeader("Cache-Control", "no-store");
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/products/${encodeURIComponent(params.slug)}/?format=json`
   );
-
-  let json_res = await res.json();
-  //console.log(json_res.weight)
-  //console.log(json_res.order_requires_freight)
-
-
-  return {
-    props: {
-      product: json_res,
-    },
-  };
-}
-export async function getStaticPaths() {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/products/?format=json`
-  );
-  const products = await res.json();
-  const paths = products.map((product) => {
-    return {
-      params: {
-        slug: product.slug.toString(),
-      },
-    };
-  });
-  return {
-    paths,
-    fallback: false,
-  };
+  if (response.status === 404) return { notFound: true };
+  if (!response.ok) throw new Error("Unable to load current product");
+  return { props: { product: await response.json() } };
 }
