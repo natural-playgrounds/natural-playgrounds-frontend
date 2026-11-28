@@ -165,6 +165,7 @@ export default function Search({ results, category, topSeller }) {
                               <div className="w-full h-full object-center object-cover sm:w-full sm:h-full"></div>
                             )}
                           </div>
+                          {seller.image_caption && <p className="mt-1 text-sm text-center text-gray-600">{seller.image_caption}</p>}
                         </Link>
                         <div className="col-span-2  flex flex-col h-full justify-between">
                           <Link
@@ -176,7 +177,6 @@ export default function Search({ results, category, topSeller }) {
                               {seller.name}
                             </h3>
                           </Link>
-                          {seller.image_caption && <p className="text-sm text-gray-600">{seller.image_caption}</p>}
                           {seller.meta_description && (
                             <div
                               className="mt-1 text-lg font-medium text-gray-900"
@@ -213,9 +213,9 @@ export default function Search({ results, category, topSeller }) {
                         />
                       ) : null}
                     </div>
+                    {product.image_caption && <p className="mt-1 text-sm text-center font-normal text-gray-600">{product.image_caption}</p>}
                     <h3 className="mt-4 mb-3 text-base font-bold text-gray-800 text-center flex-1">
                       {product.name}
-                      {product.image_caption && <span className="block mt-1 text-sm font-normal text-gray-600">{product.image_caption}</span>}
                     </h3>
                     <span className="block w-full rounded-md bg-dark-green text-white text-center font-medium py-3 px-4">
                       View Product
