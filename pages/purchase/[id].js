@@ -4,7 +4,38 @@ import { withAuthSync } from "../../lib/auth";
 import Router from "next/router";
 import Image from "next/image";
 import axios from "axios";
+import { jsPDF } from "jspdf";
 const Purchase = (props) => {
+  const money = value => Number(value || 0).toLocaleString("en-US", {style:"currency",currency:"USD"});
+  const downloadOrder = () => {
+    const doc = new jsPDF();
+    let y = 20;
+    const line = (value, size = 11) => {
+      doc.setFontSize(size);
+      const lines = doc.splitTextToSize(String(value || ""), 174);
+      for (const part of lines) {
+        if (y > 275) { doc.addPage(); y = 20; }
+        doc.text(part, 18, y); y += size * 0.45 + 2;
+      }
+    };
+    line("Natural Playgrounds", 19);
+    line("Saved Order #" + props.sale_number, 15);
+    line("Pending review. Payment has not been processed.");
+    y += 5;
+    line("Shipping address: " + props.shipping);
+    line("Billing address: " + props.billing);
+    y += 5;
+    props.products.forEach(p => {
+      line(p.name, 12);
+      line(p.option);
+      line("Quantity: " + p.amount + " | Price: " + money(p.price));
+      y += 3;
+    });
+    line("Subtotal: " + money(props.order_total));
+    line("Shipping: " + money(props.customer_shipping));
+    line("Total: " + money(Number(props.order_total) + Number(props.customer_shipping)), 14);
+    doc.save("Order-" + props.sale_number + ".pdf");
+  };
   return (
     <div className="bg-white">
       <Head>
@@ -16,12 +47,12 @@ const Purchase = (props) => {
             Thank you!
           </h1>
           <p className="mt-2 text-4xl font-extrabold tracking-tight sm:text-5xl">
-            It&lsquo;s on the way!
+            Your order has been saved.
           </p>
           <p className="mt-2 text-base text-gray-500">
-            Your order #{props.sale_number} has been placed and will be with you
-            soon.
+            Your order #{props.sale_number} is pending review. Payment has not been processed.
           </p>
+          <button type="button" onClick={downloadOrder} className="mt-6 rounded bg-green-800 px-5 py-3 font-semibold text-white">Download Order PDF</button>
         </div>
 
         <div className="mt-10 border-t border-gray-200">
@@ -81,7 +112,7 @@ const Purchase = (props) => {
                       </div>
                       <div className="pl-4 flex sm:pl-6">
                         <dt className="font-medium text-gray-900">Price:</dt>
-                        <dd className="ml-2 text-gray-700">${product.price}</dd>
+                        <dd className="ml-2 text-gray-700">{money(product.price)}</dd>
                       </div>
                     </dl>
                   </div>
@@ -94,18 +125,18 @@ const Purchase = (props) => {
             <dl className="space-y-6 border-t border-gray-200 text-sm pt-10">
               <div className="flex">
                 <dt className="font-medium text-gray-900 w-32">Subtotal</dt>
-                <dd className="text-gray-700 w-32">${props.order_total}</dd>
+                <dd className="text-gray-700 w-32">{money(props.order_total)}</dd>
               </div>
               <div className="flex">
                 <dt className="font-medium text-gray-900 w-32">Shipping</dt>
                 <dd className="text-gray-700 w-32">
-                  ${props.customer_shipping.toFixed(2)}
+                  {money(props.customer_shipping)}
                 </dd>
               </div>
               <div className="flex">
                 <dt className="font-medium text-gray-900 w-32">Total</dt>
                 <dd className="text-gray-900 w-32">
-                  ${(props.order_total + props.customer_shipping).toFixed(2)}
+                  {money(Number(props.order_total) + Number(props.customer_shipping))}
                 </dd>
               </div>
             </dl>
@@ -141,7 +172,7 @@ export async function getServerSideProps(ctx) {
     const response = await axios.get(apiUrl);
     if (response.status == 201) {
       const data = await response.data;
-      console.log(data);
+
       return {
         props: { ...data, token },
       };
