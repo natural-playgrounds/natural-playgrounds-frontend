@@ -39,7 +39,7 @@ export default function Product({ product }) {
             {product.images && product.images.length > 0 ? (
               <Tab.Group as="div" className="flex flex-col-reverse">
                 {/* Image selector */}
-                <div className="hidden mt-6 w-full max-w-2xl mx-auto sm:block lg:max-w-none">
+                <div className="mt-6 w-full max-w-2xl mx-auto lg:max-w-none">
                   <Tab.List className="grid grid-cols-4 gap-6">
                     {product.images.map((image) => (
                       <Tab
@@ -73,15 +73,13 @@ export default function Product({ product }) {
                   </Tab.List>
                 </div>
 
-                <Tab.Panels className="w-full aspect-w-1 aspect-h-1">
+                <Tab.Panels className="w-full">
                   {product.images.map((image) => (
                     <Tab.Panel key={image.id}>
-                      <Image
-                        src={image.image_url}
-                        alt={`Product image of ${image.name}`}
-                        className="w-full h-full sm:rounded-lg"
-                        fill
-                      />
+                      <div className="relative w-full aspect-square">
+                        <Image src={image.image_url} alt={image.caption || product.name} className="object-contain rounded-lg" fill />
+                      </div>
+                      {image.caption && <p className="mt-2 text-center text-sm text-gray-600">{image.caption}</p>}
                     </Tab.Panel>
                   ))}
                 </Tab.Panels>
