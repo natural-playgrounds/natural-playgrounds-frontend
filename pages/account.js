@@ -262,8 +262,7 @@ const Profile = (props) => {
                 Order history
               </h1>
               <p className="mt-2 text-sm text-gray-500">
-                Check the status of recent orders, manage returns, and download
-                invoices.
+                View your saved orders, check their status and download order PDFs.
               </p>
             </div>
 
@@ -274,7 +273,7 @@ const Profile = (props) => {
 
               <div className="space-y-16 sm:space-y-24">
                 {props.orders &&
-                  props.orders.map((order, orderIdx) => (
+                  [...props.orders].sort((a,b) => new Date(b.sale_date)-new Date(a.sale_date)).map((order, orderIdx) => (
                     <div key={orderIdx}>
                       <h3 className="sr-only">
                         Order placed on{" "}
@@ -316,9 +315,10 @@ const Profile = (props) => {
                             </dd>
                           </div>
                         </dl>
-                        <div className="space-y-4 mt-6 sm:flex sm:space-x-4 sm:space-y-0 md:mt-0"></div>
+                        
                       </div>
 
+                      <div className="mt-4 px-4 sm:px-0"><a href={`/purchase/${order.id}`} className="inline-block rounded bg-green-800 px-5 py-3 text-white font-semibold">View Order</a></div>
                       <div className="mt-6 flow-root px-4 sm:mt-10 sm:px-0">
                         <div className="-my-6 divide-y divide-gray-200 sm:-my-10">
                           {order.items.map((product, productIdx) => (
