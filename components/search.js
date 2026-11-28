@@ -14,6 +14,13 @@ export default function Search({ results, category, topSeller }) {
   const router = useRouter();
 
   useEffect(() => {
+    if (!router.query.search && !router.query.category_search) {
+      setLocalResults(results);
+      setFilterable([]);
+      setSelling([]);
+      setLoading(false);
+      return;
+    }
     if (router.query.search) {
       filterSearch(router.query.search);
     }
@@ -201,20 +208,20 @@ export default function Search({ results, category, topSeller }) {
               )}
 
               <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 xl:grid-cols-3">
-                {localResults.map((product, productIdx) => (
+                {[...localResults].sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base", numeric: true })).map((product, productIdx) => (
                   <Link key={productIdx} href={product.link} className="group flex flex-col h-full no-underline">
                     <div className="relative w-full aspect-[4/3] bg-white rounded-lg overflow-hidden">
                       {product.image_url || (product.images && product.images.length > 0 && product.images[0].image_url) ? (
                         <Image
                           src={product.image_url || product.images[0].image_url}
                           alt={product.name}
-                          className="object-contain group-hover:opacity-90"
+                          className="object-contain object-bottom group-hover:opacity-90"
                           fill
                         />
                       ) : null}
                     </div>
-                    <div className="mt-1 h-5 flex items-start justify-center text-sm text-center font-normal text-gray-600 overflow-hidden"><span className="line-clamp-1">{product.image_caption || ""}</span></div>
-                    <h3 className="mt-0 mb-2 text-base font-bold text-gray-800 text-center flex-1">
+                    <div className="h-4 leading-4 flex items-start justify-center text-sm text-center font-normal text-gray-600 overflow-hidden"><span className="line-clamp-1">{product.image_caption || ""}</span></div>
+                    <h3 className="!mt-0 mb-2 leading-tight text-base font-bold text-gray-800 text-center flex-1">
                       {product.name}
                     </h3>
                     <span className="block w-full rounded-md bg-dark-green text-white text-center font-medium py-3 px-4">
