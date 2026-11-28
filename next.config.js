@@ -20,7 +20,8 @@ const nextConfig = {
         pathname: '/**',
       },
     ],
-    // Image optimization re-enabled with sharp
+    // Serve existing catalog images directly in staging.
+    unoptimized: true,
   },
   // Enable experimental features
   experimental: {
