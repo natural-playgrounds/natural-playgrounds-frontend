@@ -53,7 +53,7 @@ export default function Example() {
 
   return (
     <Disclosure as="header" className="bg-white shadow">
-      {({ open }) => (
+      {({ open, close }) => (
         <>
           <div>
             <div className="wide-load">
@@ -180,7 +180,11 @@ export default function Example() {
 
           <Disclosure.Panel as="nav" className="lg:hidden" aria-label="Global">
             <div className="pt-2 pb-3 px-2 space-y-1">
-              {mobileNavigation.map((item) => (
+              {mobileNavigation.map((item) => item.name === "Shopping Cart" ? (
+                <button key={item.name} type="button" className="block w-full text-left rounded-md py-2 px-3 text-base font-medium" onClick={() => { close(); updateCartSlide(true); }}>
+                  Shopping Cart {mounted && totalUniqueItems > 0 ? `(${totalUniqueItems})` : ""}
+                </button>
+              ) : (
                 <Link 
                   href={item.href} 
                   key={item.name}
