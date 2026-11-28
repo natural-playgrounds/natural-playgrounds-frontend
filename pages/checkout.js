@@ -21,10 +21,10 @@ const Checkout = (props) => {
     useCart();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [total, updateTotal] = useState(0);
-  const [shippingAmount, updateShippingAmount] = useState(() =>
-    getShippingAmount()
-  );
+  const [quote, setQuote] = useState(null);
+  const [quoteError, setQuoteError] = useState(false);
+  const cartKey = JSON.stringify(items.map(({id, quantity}) => ({id, quantity})));
+  const currentQuote = quote?.key === cartKey ? quote : null;
   const [company, setCompany] = useState(props.company);
   const [billing, setBilling] = useState(props.raw_billing);
   const [shipping, setShipping] = useState(props.raw_shipping);
@@ -42,7 +42,7 @@ const Checkout = (props) => {
   const [isTokenReady, setIsTokenReady] = useState(false);
   const [tokenError, setTokenError] = useState('');
   useEffect(() => {
-    setBilling("");
+    // Preserve the saved billing address when switching address mode.
   }, [billingShippingSame]);
 
   useEffect(() => {
@@ -50,8 +50,16 @@ const Checkout = (props) => {
   }, []);
 
   useEffect(() => {
-    updateShippingAmount(getShippingAmount());
-  }, [items]);
+    let active = true;
+    setQuote(null);
+    setQuoteError(false);
+    const items = JSON.parse(cartKey);
+    if (!items.length) return;
+    axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/calculate-shipping/`, {items})
+      .then(({data}) => { if (active) setQuote({...data, key: cartKey}); })
+      .catch(() => { if (active) setQuoteError(true); });
+    return () => { active = false; };
+  }, [cartKey]);
 
   // Listen for payment token from Hosted iFrame Tokenizer
   useEffect(() => {
@@ -97,51 +105,17 @@ const Checkout = (props) => {
       window.removeEventListener('message', handleTokenMessage, false);
     };
   }, []);
-  function getShippingAmount() {
-    var orderTotal = 0;
-    items.map((item) => {
-      orderTotal =
-        orderTotal + parseFloat(item.quantity * item.price);
-    });
-
-    // Determine if all items qualify for ground shipping
-    const allGroundEligible = items.every(item => {
-      console.log('order_requires_freight ' + item.order_requires_freight);
-      return !item.order_requires_freight;
-    });
-
-    // Ground shipping pricing
-    console.log('allGroundEligible ? ', allGroundEligible)
-    if (allGroundEligible) {
-      return roundToTwoDecimals((orderTotal * 0.13) + 15);
-    }
-
-    // Pallet / LTL / Truckload pricing tiers
-    let rate;
-    if (orderTotal <= 5800) {
-      rate = 0.20;
-    } else if (orderTotal <= 10000) {
-      rate = 0.175;
-    } else if (orderTotal <= 20000) {
-      rate = 0.15;
-    } else {
-      rate = 0.12;
-    }
-    return roundToTwoDecimals(orderTotal * rate);
-  };
-  function roundToTwoDecimals(value) {
-    return Math.round(value * 100) / 100;
-  };
   async function handleSubmit(e) {
     try {
       e.preventDefault();
+      if (!currentQuote || isSubmitting) return;
 
 
       setIsSubmitting(true);
       const environment =
         process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-      console.log('Submitting checkout with shipping:', shipping);
-      console.log('Submitting checkout with billing:', billing);
+
+
 
       const res = await axios.post(`${environment}/api/checkout/`, {
         token: props.token,
@@ -172,7 +146,6 @@ const Checkout = (props) => {
       }
     } catch (error) {
       setIsSubmitting(false);
-      console.error('Checkout error:', error);
 
       // Show specific error if available
       const errorMessage = error.response?.data?.error ||
@@ -263,7 +236,7 @@ const Checkout = (props) => {
                       htmlFor="phone"
                       className="block text-sm font-medium text-gray-700"
                     >
-                      Cell Number
+                      Phone Number
                     </label>
                     <div className="mt-1">
                       <input
@@ -274,10 +247,9 @@ const Checkout = (props) => {
                         defaultValue={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         autoComplete="tel"
-                        pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
                         className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm p-2 border-2"
                       />
-                      <div className="text-xs">Format ###-###-####</div>
+                      <div className="text-xs">Mobile preferred; landline accepted.</div>
                     </div>
                   </div>
                 </div>
@@ -305,7 +277,7 @@ const Checkout = (props) => {
                           setShippingDirty(true);
                         }}
                         onPlaceSelected={(place) => {
-                          console.log('Google Places selected:', place);
+
                           setShipping(place);
                           setShippingDirty(false);
                         }}
@@ -383,7 +355,7 @@ const Checkout = (props) => {
                             setBillingDirty(true);
                           }}
                           onPlaceSelected={(place) => {
-                            console.log('Billing place selected:', place);
+
                             setBilling(place);
                             setBillingDirty(false);
                           }}
@@ -496,7 +468,7 @@ const Checkout = (props) => {
                       <div className="flex items-center justify-between">
                         <dt className="text-sm">Subtotal</dt>
                         <dd className="text-sm font-medium text-gray-900">
-                          ${cartTotal.toFixed(2)}
+                          {currentQuote ? `${currentQuote.orderTotal.toFixed(2)}` : `${cartTotal.toFixed(2)}`}
                         </dd>
                       </div>
                       <div className="flex items-center justify-between">
@@ -504,20 +476,17 @@ const Checkout = (props) => {
                           Shipping
                           <br />
                           <div className="w-3/4 text-xs italic">
-                            This is our best guess. Due to the nature of our
-                            products we put an estimate together. Once the product
-                            is ready to ship, we&lsquo;ll reach back out with actual
-                            shipping amounts. Your card will be charge then.
+                            Shipping is estimated and will be reviewed before payment is arranged.
                           </div>
                         </dt>
                         <dd className="text-sm font-medium text-gray-900">
-                          ${shippingAmount.toFixed(2)}
+                          {currentQuote ? `${currentQuote.shippingCost.toFixed(2)}` : quoteError ? "Unavailable" : "Calculating…"}
                         </dd>
                       </div>
                       <div className="flex items-center justify-between border-t border-gray-200 pt-6">
                         <dt className="text-base font-medium">Total</dt>
                         <dd className="text-base font-medium text-gray-900">
-                          ${(cartTotal + shippingAmount).toFixed(2)}
+                          {currentQuote ? `${currentQuote.totalWithShipping.toFixed(2)}` : "Pending shipping"}
                         </dd>
                       </div>
                     </dl>
@@ -543,7 +512,7 @@ const Checkout = (props) => {
                       {items.length > 0 &&
                         !shippingDirty &&
                         !billingDirty ? (
-                        <button type="submit" disabled={isSubmitting} className="w-full button">
+                        <button type="submit" disabled={isSubmitting || !currentQuote} className="w-full button disabled:opacity-50">
                           Save Order
                         </button>
                       ) : null}
