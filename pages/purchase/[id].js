@@ -5,7 +5,10 @@ import Router from "next/router";
 import Image from "next/image";
 import axios from "axios";
 import { jsPDF } from "jspdf";
+import { useRef } from "react";
+import ReactToPrint from "react-to-print";
 const Purchase = (props) => {
+  const instructionsRef = useRef(null);
   const money = value => Number(value || 0).toLocaleString("en-US", {style:"currency",currency:"USD"});
   const statusText = props.payment_status === "COMPLETED" ? "Payment received." : props.payment_status === "PENDING" ? "Payment pending." : `Payment status: ${props.payment_status || "Unknown"}`;
   const downloadOrder = () => {
@@ -55,6 +58,11 @@ const Purchase = (props) => {
           </p>
           <a href="/account" className="block mt-4 underline">Back to Order History</a>
           <button type="button" onClick={downloadOrder} className="mt-6 rounded bg-green-800 px-5 py-3 font-semibold text-white">Download Order PDF</button>
+          <ReactToPrint documentTitle={`Installation-Instructions-${props.sale_number}`} content={() => instructionsRef.current} pageStyle="@page { size: letter; margin: 0.5in; } @media print { img { max-width: 100%; height: auto; } }" trigger={() => <button type="button" className="mt-3 block rounded bg-green-800 px-5 py-3 font-semibold text-white">Print / Save Installation Instructions PDF</button>} />
+          <div style={{display:"none"}}><div ref={instructionsRef}>
+            <h1>Installation Instructions — Order #{props.sale_number}</h1>
+            {(props.instructions || []).map((p,i) => <section key={p.href} style={{breakBefore:i ? "page" : "auto"}}><h2>{p.name}</h2>{p.instructions ? <div dangerouslySetInnerHTML={{__html:p.instructions}} /> : <p>Instructions unavailable. Contact info@naturalplaygrounds.com.</p>}</section>)}
+          </div></div>
         </div>
 
         <div className="mt-10 border-t border-gray-200">
@@ -174,9 +182,16 @@ export async function getServerSideProps(ctx) {
     const response = await axios.get(apiUrl, {headers: {Authorization: `Token ${token}`}});
     if (response.status == 201) {
       const data = await response.data;
-
+      const unique = [...new Map(data.products.map(p => [p.href,p])).values()];
+      const instructions = await Promise.all(unique.map(async p => {
+        try {
+          const slug = p.href.split("/").filter(Boolean).pop();
+          const {data: product} = await axios.get(`${environment}/api/products/${encodeURIComponent(slug)}/?format=json`, {timeout:10000});
+          return {href:p.href,name:p.name,instructions:product.instructions || ""};
+        } catch { return {href:p.href,name:p.name,instructions:""}; }
+      }));
       return {
-        props: { ...data, token },
+        props: { ...data, token, instructions },
       };
     } else {
       // https://github.com/developit/unfetch#caveats
